@@ -5,18 +5,21 @@
 
 var map;
 var renderer;
+var player;
 
 var lastTime = 0;
 function tick() {
     requestAnimFrame(tick);
     renderer.drawScene(function() {
             map.draw();
+            player.draw();
     });
 
     var timeNow = new Date().getTime();
     if (lastTime != 0) {
         var elapsed = timeNow - lastTime;
-        map.tick(elapsed)
+        map.tick(elapsed);
+        player.tick(elapsed);
     }
     lastTime = timeNow;
 }
@@ -27,5 +30,7 @@ function start() {
         return;
 
     map = new Map();
+    player = new Player();
+
     tick();
 }

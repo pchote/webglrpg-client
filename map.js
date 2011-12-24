@@ -43,8 +43,8 @@ var Map = new Class({
             vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileCoords(data.tiles[k]));
         }
 
-        this.vertexPosBuf = renderer.createBuffer(vertices, 3);
-        this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, 2);
+        this.vertexPosBuf = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
+        this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
     },
 
     draw: function() {

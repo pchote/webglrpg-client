@@ -22,18 +22,26 @@ var Renderer = new Class({
     	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clearDepth(1.0);
 		gl.enable(gl.DEPTH_TEST);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.enable(gl.BLEND);
         initShaders();
         this.loaded = true;
     },
 
-    createBuffer: function(contents, itemSize) {
+    createBuffer: function(contents, type, itemSize) {
         var buf = gl.createBuffer();
         buf.itemSize = itemSize;
         buf.numItems = contents.length / itemSize;
         gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(contents), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(contents), type);
         gl.bindBuffer(gl.ARRAY_BUFFER, null);
         return buf;
+    },
+
+    updateBuffer: function(buffer, contents) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(contents));
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
     },
 
     bindBuffer: function(buffer, attribute) {
@@ -47,6 +55,7 @@ var Renderer = new Class({
         texture.loaded = false;
 
         texture.image.onload = function() {
+            console.log("loaded image "+texture.image.src);
             gl.bindTexture(gl.TEXTURE_2D, texture);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
