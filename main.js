@@ -3,12 +3,6 @@
 // GNU General Public License, as published by the Free Software Foundation.
 // See LICENSE.html for the license terms.
 
-var gl;
-var shaderProgram;
-var mvMatrix = mat4.create();
-var mvMatrixStack = [];
-var pMatrix = mat4.create();
-
 var map;
 var renderer;
 
@@ -28,27 +22,10 @@ function tick() {
 }
 
 function start() {
-    renderer = new Renderer();
+    renderer = new Renderer("glcanvas");
+    if (!renderer.loaded)
+        return;
 
-	var canvas = document.getElementById("glcanvas");
-	gl = WebGLUtils.setupWebGL(canvas);
-    gl.viewportWidth = canvas.width;
-    gl.viewportHeight = canvas.height;
-
-	if (gl) {
-		gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Set clear color to black, fully opaque
-		gl.clearDepth(1.0);                 // Clear everything
-		gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-		
-        // Initialize the shaders; this is where all the lighting for the
-        // vertices and so forth is established.
-        initShaders();
-        
-        map = new Map();
-    
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.enable(gl.DEPTH_TEST);
-
-        tick();
-	}
+    map = new Map();
+    tick();
 }

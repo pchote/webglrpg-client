@@ -1,4 +1,31 @@
+// This file is part of webglrpg-client, Copyright (C) 2011 Paul Chote
+// You can redistribute and/or modify it under the terms of version 3 of the
+// GNU General Public License, as published by the Free Software Foundation.
+// See LICENSE.html for the license terms.
+
+var gl;
+var shaderProgram;
+var mvMatrix = mat4.create();
+var mvMatrixStack = [];
+var pMatrix = mat4.create();
+
 var Renderer = new Class({
+    initialize: function(canvasId) {
+    	var canvas = document.getElementById("glcanvas");
+    	gl = WebGLUtils.setupWebGL(canvas);
+    	if (!gl) {
+    	    console.error("Unable to start webgl");
+    	    return;
+    	}
+        gl.viewportWidth = canvas.width;
+        gl.viewportHeight = canvas.height;
+    	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.clearDepth(1.0);
+		gl.enable(gl.DEPTH_TEST);
+        initShaders();
+        this.loaded = true;
+    },
+
     createBuffer: function(contents, itemSize) {
         var buf = gl.createBuffer();
         buf.itemSize = itemSize;
