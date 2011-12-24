@@ -5,7 +5,27 @@
 
 var Map = new Class({
     initialize: function() {
-        this.mapSize = [5, 5];
+        var data = {
+            size: [5,5],
+            tiles: [
+                1,1,1,1,1,
+                1,0,0,0,1,
+                1,0,0,0,1,
+                1,0,0,0,1,
+                1,1,1,1,1
+            ],
+
+            height: [
+                0,0,0,0,0,0,
+                0,0,0,0,0,0,
+                0,0,0.3,0.5,0,0,
+                0,0,0.4,0.2,0,0,
+                0,0,0,0,0,0,
+                0,0,0,0,0,0
+            ],
+        };
+
+        this.mapSize = data.size;
         this.tileset = new Tileset();
         this.vertexPosBuf = gl.createBuffer();
         this.vertexPosBuf.itemSize = 3;
@@ -16,13 +36,20 @@ var Map = new Class({
         this.vertexTexBuf.itemSize = 2;
         this.vertexTexBuf.numItems = 0;
         var vertexTexCoords = [];
-        for (var j = 0; j < this.mapSize[1]; j++) {
-            for (var i = 0; i < this.mapSize[0]; i++) {
-                vertices = vertices.concat(this.makeTileQuad(i,j));
-                this.vertexPosBuf.numItems += 6;
-                vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileCoords((i+j)%2));
-                this.vertexTexBuf.numItems += 6; 
-            }
+        for (var k = 0; k <  this.mapSize[0]*this.mapSize[1]; k++) {
+            var j = Math.floor(k / this.mapSize[0]), i = k % this.mapSize[0];
+            var vv = function(i,j) { return [i, j, data.height[(data.size[0] + 1)*j + i]] };
+            var v = [vv(i,j), vv(i+1,j), vv(i+1,j+1), vv(i,j+1)];
+
+            var polys = (v[1][2] == v[3][2]) ?
+                [[v[0], v[1], v[2]], [v[0], v[2], v[3]]] :
+                [[v[1], v[2], v[3]], [v[1], v[3], v[0]]];
+
+            vertices = vertices.concat(polys.flatten());
+
+            this.vertexPosBuf.numItems += 6;
+            vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileCoords(data.tiles[k]));
+            this.vertexTexBuf.numItems += 6;
         }
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPosBuf);
@@ -51,13 +78,8 @@ var Map = new Class({
         mvPopMatrix();
     },
 
-    // Return vertices for two triangles for a tile at i,j
-    makeTileQuad: function(i, j) {
-        return [i, j, 0, i+1, j, 0, i+1, j+1, 0, i, j, 0, i+1, j+1, 0, i, j+1, 0];
-    },
-
     rot: -45,
     tick: function(dt) {
-        this.rot += dt/200.0;
+        //this.rot += dt/200.0;
     },
 });
