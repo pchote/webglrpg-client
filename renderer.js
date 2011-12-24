@@ -81,6 +81,16 @@ var Renderer = new Class({
         mat4.identity(mvMatrix);
 
         drawFunc();
+    },
+
+    cameraAngle: 45,
+    cameraOffset: vec3.create(),
+    setCamera: function() {
+        mat4.translate(mvMatrix, [0.0, 0.0, -15.0]);
+        mat4.rotate(mvMatrix, degToRad(-this.cameraAngle), [1, 0, 0]);
+
+        vec3.negate(player.pos, this.cameraOffset);
+        mat4.translate(mvMatrix, this.cameraOffset);
     }
 });
 

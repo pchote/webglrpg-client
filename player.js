@@ -7,7 +7,7 @@ var Player = new Class({
     src: "player.gif",
     srcSize: {w:128, h:256},
     size: {w:24, h:32},
-    pos: [0.0, 0.0, 0],
+    pos: [-0.25, 0.0, 0],
     animFrame: 0,
 
     //src: "desert_1.gif",
@@ -15,7 +15,7 @@ var Player = new Class({
     initialize: function() {
         // Character art from http://opengameart.org/content/chara-seth-scorpio
         this.texture = renderer.createTexture(this.src);
-        var vv = function(i,j) { return [i, j, 0] };
+        var vv = function(i,j) { return [i, 0, j] };
         var v = [vv(0,0), vv(1.5,0), vv(1.5,2), vv(0,2)];
 
         var vertices = [[v[2], v[3], v[0]], [v[2], v[0], v[1]]].flatten();
@@ -43,10 +43,10 @@ var Player = new Class({
 
     draw: function() {
         mvPushMatrix();
-        mat4.translate(mvMatrix, [0.0, 0.0, -9.0]);
-        mat4.rotate(mvMatrix, degToRad(-45), [1, 0, 0]);
+        renderer.setCamera();
         mat4.translate(mvMatrix, this.pos);
-        mat4.rotate(mvMatrix, degToRad(45), [1, 0, 0]);
+        // Hack: Characters should be displayed in a flat plane
+        mat4.rotate(mvMatrix, degToRad(-renderer.cameraAngle), [1, 0, 0]);
         renderer.bindBuffer(this.vertexPosBuf, shaderProgram.vertexPositionAttribute);
         renderer.bindBuffer(this.vertexTexBuf, shaderProgram.vertexColorAttribute);
         renderer.bindTexture(this.texture);
@@ -66,8 +66,8 @@ var Player = new Class({
             renderer.updateBuffer(this.vertexTexBuf, this.getTexCoords());
         }
         this.pos[1] -= dt/1000;
-        if (this.pos[1] < -2.5)
-            this.pos[1] = 2.5;
+        if (this.pos[1] < 0)
+            this.pos[1] = 5;
             
         
     }

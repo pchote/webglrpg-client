@@ -49,10 +49,7 @@ var Map = new Class({
 
     draw: function() {
         mvPushMatrix();
-        mat4.translate(mvMatrix, [0.0, 0.0, -9.0]);
-        mat4.rotate(mvMatrix, degToRad(this.rot), [1, 0, 0]);
-        mat4.translate(mvMatrix, [-this.mapSize[0]/2.0, -this.mapSize[1]/2.0, 0.0]);
-        
+        renderer.setCamera();
         renderer.bindBuffer(this.vertexPosBuf, shaderProgram.vertexPositionAttribute);
         renderer.bindBuffer(this.vertexTexBuf, shaderProgram.vertexColorAttribute);
         renderer.bindTexture(this.tileset.texture);
