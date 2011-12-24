@@ -65,7 +65,8 @@ var Renderer = new Class({
             gl.linkProgram(shaderProgram);
 
             if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-                alert("Could not initialise shaders");
+                console.error("Could not initialise shaders");
+                return;
             }
 
             gl.useProgram(shaderProgram);
