@@ -1,3 +1,53 @@
+var Renderer = new Class({
+    createBuffer: function(contents, itemSize) {
+        var buf = gl.createBuffer();
+        buf.itemSize = itemSize;
+        buf.numItems = contents.length / itemSize;
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(contents), gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        return buf;
+    },
+
+    bindBuffer: function(buffer, attribute) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.vertexAttribPointer(attribute, buffer.itemSize, gl.FLOAT, false, 0, 0);
+    },
+
+    createTexture: function(src) {
+        var texture = gl.createTexture();
+        texture.image = new Image();
+        texture.loaded = false;
+
+        texture.image.onload = function() {
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.bindTexture(gl.TEXTURE_2D, null);
+            texture.loaded = true;
+        };
+        texture.image.src = src;
+        return texture;
+    },
+
+    bindTexture: function(texture) {
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.uniform1i(shaderProgram.samplerUniform, 0);
+    },
+
+    drawScene: function(drawFunc) {
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+        mat4.identity(mvMatrix);
+
+        drawFunc();
+    }
+});
+
 //
 // initShaders
 //

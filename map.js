@@ -27,14 +27,8 @@ var Map = new Class({
 
         this.mapSize = data.size;
         this.tileset = new Tileset();
-        this.vertexPosBuf = gl.createBuffer();
-        this.vertexPosBuf.itemSize = 3;
-        this.vertexPosBuf.numItems = 0;
+
         var vertices = [];
-        
-        this.vertexTexBuf = gl.createBuffer();
-        this.vertexTexBuf.itemSize = 2;
-        this.vertexTexBuf.numItems = 0;
         var vertexTexCoords = [];
         for (var k = 0; k <  this.mapSize[0]*this.mapSize[1]; k++) {
             var j = Math.floor(k / this.mapSize[0]), i = k % this.mapSize[0];
@@ -46,17 +40,11 @@ var Map = new Class({
                 [[v[1], v[2], v[3]], [v[1], v[3], v[0]]];
 
             vertices = vertices.concat(polys.flatten());
-
-            this.vertexPosBuf.numItems += 6;
             vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileCoords(data.tiles[k]));
-            this.vertexTexBuf.numItems += 6;
         }
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPosBuf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexTexBuf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexTexCoords), gl.STATIC_DRAW);
+        this.vertexPosBuf = renderer.createBuffer(vertices, 3);
+        this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, 2);
     },
 
     draw: function() {
@@ -65,13 +53,10 @@ var Map = new Class({
         mat4.rotate(mvMatrix, degToRad(this.rot), [1, 0, 0]);
         mat4.translate(mvMatrix, [-this.mapSize[0]/2.0, -this.mapSize[1]/2.0, 0.0]);
         
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexPosBuf);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, this.vertexPosBuf.itemSize, gl.FLOAT, false, 0, 0);
-        
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexTexBuf);
-        gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, this.vertexTexBuf.itemSize, gl.FLOAT, false, 0, 0);
+        renderer.bindBuffer(this.vertexPosBuf, shaderProgram.vertexPositionAttribute);
+        renderer.bindBuffer(this.vertexTexBuf, shaderProgram.vertexColorAttribute);
+        renderer.bindTexture(this.tileset.texture);
 
-        this.tileset.bindTexture();
         shaderProgram.setMatrixUniforms();
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
 

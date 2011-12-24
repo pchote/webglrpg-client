@@ -10,18 +10,15 @@ var mvMatrixStack = [];
 var pMatrix = mat4.create();
 
 var map;
-
-function drawScene() {
-    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
-    mat4.identity(mvMatrix);
-
-    map.draw();
-}
+var renderer;
 
 var lastTime = 0;
-function animate() {
+function tick() {
+    requestAnimFrame(tick);
+    renderer.drawScene(function() {
+            map.draw();
+    });
+
     var timeNow = new Date().getTime();
     if (lastTime != 0) {
         var elapsed = timeNow - lastTime;
@@ -30,14 +27,9 @@ function animate() {
     lastTime = timeNow;
 }
 
-
-function tick() {
-    requestAnimFrame(tick);
-    drawScene();
-    animate();
-}
-
 function start() {
+    renderer = new Renderer();
+
 	var canvas = document.getElementById("glcanvas");
 	gl = WebGLUtils.setupWebGL(canvas);
     gl.viewportWidth = canvas.width;
