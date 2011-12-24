@@ -18,8 +18,8 @@ var Tileset = new Class({
     tileSize: 16,
     
     tiles: {
-        0: new Tile(16, 16), // Grass
-        1: new Tile(16, 64)  // Water
+        1: new Tile(16, 16), // Grass
+        0: new Tile(16, 64)  // Water
     },
 
     initialize: function() {
