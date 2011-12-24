@@ -37,7 +37,8 @@ var Player = new Class({
     },
 
     pos: vec3.create([1,0,0]),
-    drawOffset: vec3.create([-0.25, 0.0, 0]),
+    drawOffset: vec3.create([-0.25, 0, 0]),
+    hotspotOffset: vec3.create([0.5, 0.5, 0]),
     animFrame: 0,
 
     initialize: function() {
@@ -97,15 +98,15 @@ var Player = new Class({
         {
             case Facings.Right:
                 this.pos[0] += dt/1000;
-                if (this.pos[0] >= 4) {
-                    this.pos[0] = 4;
+                if (this.pos[0] >= map.data.width - 1) {
+                    this.pos[0] = map.data.width - 1;
                     this.facing = Facings.Up;
                 }
             break;
             case Facings.Up:
                 this.pos[1] += dt/1000;
-                if (this.pos[1] >= 4) {
-                    this.pos[1] = 4;
+                if (this.pos[1] >= map.data.height - 1) {
+                    this.pos[1] = map.data.height - 1;
                     this.facing = Facings.Left;
                 }
             break;
@@ -125,6 +126,8 @@ var Player = new Class({
             break;
         }
 
-        this.pos[2] = map.getHeight(this.pos);
+        var hx = this.pos[0]+this.hotspotOffset[0];
+        var hy = this.pos[1]+this.hotspotOffset[1];
+        this.pos[2] = map.getHeight(hx, hy);
     }
 });
