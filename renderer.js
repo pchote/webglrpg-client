@@ -10,6 +10,9 @@ var mvMatrixStack = [];
 var pMatrix = mat4.create();
 
 var Renderer = new Class({
+    initializedWebGl: false,
+    loadedShaders: false,
+
     initialize: function(canvasId) {
     	var canvas = document.getElementById("glcanvas");
     	gl = WebGLUtils.setupWebGL(canvas);
@@ -17,6 +20,7 @@ var Renderer = new Class({
     	    console.error("Unable to start webgl");
     	    return;
     	}
+
         gl.viewportWidth = canvas.width;
         gl.viewportHeight = canvas.height;
     	gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -24,8 +28,79 @@ var Renderer = new Class({
 		gl.enable(gl.DEPTH_TEST);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.enable(gl.BLEND);
-        initShaders();
-        this.loaded = true;
+        this.initializedWebGl = true;
+
+        var fragmentShader = null;
+        var vertexShader = null;
+
+        var self = this;
+        var loadShader = function(file, type, withShader) {
+            new Request({
+                url: file,
+                method: 'get',
+                link: 'chain',
+                onSuccess: function(shaderText) {
+                    var shader = gl.createShader(type);
+                    gl.shaderSource(shader, shaderText);
+                    gl.compileShader(shader);
+
+                    // See if it compiled successfully
+                    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                        console.error("Error compiling shader "+file+": "+gl.getShaderInfoLog(shader));
+                        withShader(null);
+                    }
+                    withShader(shader);
+                },
+                onFailure: function() { console.error("Error loading shader "+file)}
+            }).send();
+        }
+
+        var compile = function() {
+            if (!fragmentShader || !vertexShader)
+                return;
+
+            shaderProgram = gl.createProgram();
+            gl.attachShader(shaderProgram, vertexShader);
+            gl.attachShader(shaderProgram, fragmentShader);
+            gl.linkProgram(shaderProgram);
+
+            if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+                alert("Could not initialise shaders");
+            }
+
+            gl.useProgram(shaderProgram);
+            shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+            gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+            shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+            gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+
+            shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+            shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+            shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+
+            shaderProgram.setMatrixUniforms = function() {
+                gl.uniformMatrix4fv(this.pMatrixUniform, false, pMatrix);
+                gl.uniformMatrix4fv(this.mvMatrixUniform, false, mvMatrix);
+            };
+
+            self.loadedShaders = true;
+        }
+
+        loadShader('main.frag', gl.FRAGMENT_SHADER, function(s) { fragmentShader = s; compile(); })
+        loadShader('main.vert', gl.VERTEX_SHADER, function(s) { vertexShader = s; compile(); })
+    },
+
+    drawScene: function(drawFunc) {
+        if (!this.loadedShaders)
+            return;
+
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+        mat4.identity(mvMatrix);
+
+        drawFunc();
     },
 
     createBuffer: function(contents, type, itemSize) {
@@ -74,15 +149,6 @@ var Renderer = new Class({
         gl.uniform1i(shaderProgram.samplerUniform, 0);
     },
 
-    drawScene: function(drawFunc) {
-        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
-        mat4.identity(mvMatrix);
-
-        drawFunc();
-    },
-
     cameraAngle: 45,
     cameraOffset: vec3.create(),
     setCamera: function() {
@@ -93,91 +159,6 @@ var Renderer = new Class({
         mat4.translate(mvMatrix, this.cameraOffset);
     }
 });
-
-//
-// initShaders
-//
-// Initialize the shaders, so WebGL knows how to light our scene.
-//
-function initShaders() {
-    var fragmentShader = getShader(gl, "shader-fs");
-    var vertexShader = getShader(gl, "shader-vs");
-
-    shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
-
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert("Could not initialise shaders");
-    }
-
-    gl.useProgram(shaderProgram);
-
-    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-
-    shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
-    gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
-
-    shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-    shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-    shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
-
-    shaderProgram.setMatrixUniforms = function() {
-        gl.uniformMatrix4fv(this.pMatrixUniform, false, pMatrix);
-        gl.uniformMatrix4fv(this.mvMatrixUniform, false, mvMatrix);
-    };
-}
-
-//
-// getShader
-//
-// Loads a shader program by scouring the current document,
-// looking for a script with the specified ID.
-//
-function getShader(gl, id) {
-    var shaderScript = document.getElementById(id);
-
-    // Didn't find an element with the specified ID; abort.
-    if (!shaderScript)
-        return null;
-
-    // Walk through the source element's children, building the
-    // shader source string.
-    var theSource = "";
-    var currentChild = shaderScript.firstChild;
-
-    while(currentChild) {
-        if (currentChild.nodeType == 3)
-            theSource += currentChild.textContent;
-        currentChild = currentChild.nextSibling;
-    }
-
-    // Now figure out what type of shader script we have,
-    // based on its MIME type.
-    var shader;
-    if (shaderScript.type == "x-shader/x-fragment")
-        shader = gl.createShader(gl.FRAGMENT_SHADER);
-    else if (shaderScript.type == "x-shader/x-vertex")
-        shader = gl.createShader(gl.VERTEX_SHADER);
-    else
-        return null;  // Unknown shader type
-
-    // Send the source to the shader object
-    gl.shaderSource(shader, theSource);
-
-    // Compile the shader program
-    gl.compileShader(shader);
-
-    // See if it compiled successfully
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        alert("An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader));
-        return null;
-    }
-
-    return shader;
-}
 
 function mvPushMatrix() {
     var copy = mat4.create();

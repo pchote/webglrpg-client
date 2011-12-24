@@ -26,11 +26,13 @@ function tick() {
 
 function start() {
     renderer = new Renderer("glcanvas");
-    if (!renderer.loaded)
+    if (!renderer.initializedWebGl)
+    {
+        console.error("Renderer init failed - exiting");
         return;
+    }
 
     map = new Map();
     player = new Player();
-
     tick();
 }
