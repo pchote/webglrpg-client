@@ -7,11 +7,10 @@ var Player = new Class({
     src: "player.gif",
     srcSize: {w:128, h:256},
     size: {w:24, h:32},
-    pos: [-0.25, 0.0, 0],
+    pos: vec3.create([1,0,0]),
+    drawOffset: vec3.create([-0.25, 0.0, 0]),
     animFrame: 0,
 
-    //src: "desert_1.gif",
-    //srcSize: {w:256, h:512},
     initialize: function() {
         // Character art from http://opengameart.org/content/chara-seth-scorpio
         this.texture = renderer.createTexture(this.src);
@@ -27,14 +26,14 @@ var Player = new Class({
     
     getTexCoords: function(i) {
         var frames = [
-            {u: 0, v: 64},
-            {u: 24, v: 64},
-            {u: 48, v: 64},
-            {u: 24, v: 64}
+            {u: 0, v: 32},
+            {u: 24, v: 32},
+            {u: 48, v: 32},
+            {u: 24, v: 32}
         ];
         var t = frames[this.animFrame % 4];
-        var u0 = t.u*1.0/this.srcSize.w;
-        var u1 = (t.u+this.size.w)*1.0/this.srcSize.w;
+        var u1 = t.u*1.0/this.srcSize.w;
+        var u0 = (t.u+this.size.w)*1.0/this.srcSize.w;
         var v0 = 1.0 - t.v*1.0/this.srcSize.h;
         var v1 = 1.0 - (t.v+this.size.h)*1.0/this.srcSize.h;
 
@@ -47,13 +46,15 @@ var Player = new Class({
         mat4.translate(mvMatrix, this.pos);
         // Hack: Characters should be displayed in a flat plane
         mat4.rotate(mvMatrix, degToRad(-renderer.cameraAngle), [1, 0, 0]);
+        mat4.translate(mvMatrix, this.drawOffset);
         renderer.bindBuffer(this.vertexPosBuf, shaderProgram.vertexPositionAttribute);
         renderer.bindBuffer(this.vertexTexBuf, shaderProgram.vertexColorAttribute);
         renderer.bindTexture(this.texture);
 
         shaderProgram.setMatrixUniforms();
+        gl.disable(gl.DEPTH_TEST);
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
-
+        gl.enable(gl.DEPTH_TEST);
         mvPopMatrix();
     },
     
@@ -65,10 +66,10 @@ var Player = new Class({
             this.animFrame++;
             renderer.updateBuffer(this.vertexTexBuf, this.getTexCoords());
         }
-        this.pos[1] -= dt/1000;
-        if (this.pos[1] < 0)
-            this.pos[1] = 5;
-            
+        this.pos[0] += dt/1000;
+        if (this.pos[0] >= 5)
+            this.pos[0] = 0;
         
+        this.pos[2] = map.getHeight(this.pos);
     }
 });
