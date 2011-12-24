@@ -1,0 +1,42 @@
+<html>
+	<head>
+		<title>WebGL Tile Renderer</title>
+		<!-- External libraries -->
+		<script src="webgl-utils.js" type="text/javascript"></script>
+		<script src="gl-matrix-min.js" type="text/javascript"></script>
+
+		<!-- Shaders -->
+		<script id="shader-fs" type="x-shader/x-fragment">
+		    precision mediump float;
+			varying vec2 vTextureCoord;
+  			uniform sampler2D uSampler;
+
+		    void main(void) {
+    			gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+		    }
+		</script>
+		<script id="shader-vs" type="x-shader/x-vertex">
+			attribute vec3 aVertexPosition;
+  			attribute vec2 aTextureCoord;
+
+			uniform mat4 uMVMatrix;
+			uniform mat4 uPMatrix;
+
+ 			varying vec2 vTextureCoord;
+			
+			void main(void) {
+				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+				vTextureCoord = aTextureCoord;
+			}	
+		</script>
+
+		<!-- Main logic -->
+		<script src="renderer.js" type="text/javascript"></script>		
+		<script src="tileset.js" type="text/javascript"></script>
+		<script src="map.js" type="text/javascript"></script>
+		<script src="main.js" type="text/javascript"></script>
+	</head>
+	<body onload="start()">
+		<canvas id="glcanvas" width="640" height="480"></canvas>
+	</body>
+</html>
