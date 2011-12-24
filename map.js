@@ -3,11 +3,10 @@
 // GNU General Public License, as published by the Free Software Foundation.
 // See LICENSE.html for the license terms.
 
-Map = function() {
-    this.mapSize = [5, 5];
-    this.tileset = new Tileset();
-
-    this.init = function() {        
+var Map = new Class({
+    initialize: function() {
+        this.mapSize = [5, 5];
+        this.tileset = new Tileset();
         this.vertexPosBuf = gl.createBuffer();
         this.vertexPosBuf.itemSize = 3;
         this.vertexPosBuf.numItems = 0;
@@ -21,7 +20,6 @@ Map = function() {
             for (var i = 0; i < this.mapSize[0]; i++) {
                 vertices = vertices.concat(this.makeTileQuad(i,j));
                 this.vertexPosBuf.numItems += 6;
-                console.log(this.makeTileQuad(i,j));
                 vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileCoords((i+j)%2));
                 this.vertexTexBuf.numItems += 6; 
             }
@@ -32,9 +30,9 @@ Map = function() {
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexTexBuf);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexTexCoords), gl.STATIC_DRAW);
-    };
+    },
 
-    this.draw = function() {
+    draw: function() {
         mvPushMatrix();
         mat4.translate(mvMatrix, [0.0, 0.0, -9.0]);
         mat4.rotate(mvMatrix, degToRad(this.rot), [1, 0, 0]);
@@ -51,18 +49,15 @@ Map = function() {
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
 
         mvPopMatrix();
-    };
-    
-    
-    // Return vertices for two triangles for a tile at i,j
-    this.makeTileQuad = function(i, j) {
-        return [i, j, 0, i+1, j, 0, i+1, j+1, 0, i, j, 0, i+1, j+1, 0, i, j+1, 0];
-    };
-    
-    this.rot = -45;
-    this.tick = function(dt) {
-        this.rot += dt/200.0;
-    };
+    },
 
-    this.init();
-}
+    // Return vertices for two triangles for a tile at i,j
+    makeTileQuad: function(i, j) {
+        return [i, j, 0, i+1, j, 0, i+1, j+1, 0, i, j, 0, i+1, j+1, 0, i, j+1, 0];
+    },
+
+    rot: -45,
+    tick: function(dt) {
+        this.rot += dt/200.0;
+    },
+});
