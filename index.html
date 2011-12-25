@@ -12,8 +12,40 @@
 		<script src="map.js" type="text/javascript"></script>
 		<script src="main.js" type="text/javascript"></script>
 		<script src="actor.js" type="text/javascript"></script>
+		<style>
+		body {
+			color:#fff;
+		}
+		#loadscreen {
+			width:640px;
+			height:480px;
+			background:#000
+		}
+		#loadscreen h1 {
+			position:relative;
+			text-align: center;
+			top:160px;
+		}
+		#loadscreen p {
+			position:relative;
+			left: 245px;
+			width: 150px;
+			top: 160px;
+			margin: 0 10px 10px 0;
+		}
+		#loadscreen p span {
+			float:right;
+			color: #090;
+		}
+		</style>
 	</head>
 	<body onload="start()">
-		<canvas id="glcanvas" width="640" height="480"></canvas>
+		<div id="loadscreen">
+			<h1 id="text">Loading Initial Assets</h1>
+			<p>Map... <span id="map-done"></span></p>
+			<p>Actors... <span id="actors-done"></span></p>
+			<p>Art... <span id="art-done"></span></p>
+		</div>
+		<canvas id="glcanvas" style="display: none" width="640" height="480"></canvas>
 	</body>
 </html>

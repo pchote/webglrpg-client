@@ -136,7 +136,17 @@ var Map = new Class({
         this.actorList.each(function(a) { a.draw(); });
     },
 
+    // Actions to run after the map ticks
+    // Actions should return a new action to run in the next tick, or null
+    afterTick: [],
     tick: function(dt) {
         this.actorList.each(function(a) { a.tick(dt); });
+
+        if (this.afterTick.length)
+            this.afterTick = this.afterTick.map(function(a) { return a(); }).clean();
     },
+
+    runAfterTick: function(a) {
+        this.afterTick.push(a);
+    }
 });
