@@ -4,7 +4,8 @@
 // See LICENSE.html for the license terms.
 
 var Map = new Class({
-    loaded: false,
+    loadedGeometry: false,
+    loadedActors: false,
 
     // Map Data
     data: {},
@@ -23,7 +24,7 @@ var Map = new Class({
             method: 'get',
             link: 'chain',
             secure: true,
-            onSuccess: function(json) { self.load(json) },
+            onSuccess: function(json) { self.dataRecieved(json) },
             onFailure: function() { console.error("Error fetching map "+file)},
             onError: function(text, error) {
                 console.error("Error parsing map file "+file+": "+error );
@@ -32,11 +33,28 @@ var Map = new Class({
         }).send();
     },
 
-    // Parse map data and create level
-    load: function(data) {
-        var self = this;
+    // Recieved map definition JSON
+    dataRecieved: function(data) {
         this.data = data;
-        this.tileset = new Tileset();
+        var self = this;
+
+        // Load tileset if necessary, then create level geometry
+        console.log(data.tileset);
+        this.tileset = TilesetLoader.load(data.tileset);
+        this.tileset.whenReady(function() { self.createGeometry() });
+
+        // Load actors
+        data.actors.each(function(a) {
+            var actor = new Actors[a.type](a);
+            self.actorDict[a.id] = actor;
+            self.actorList.push(actor);
+        });
+        this.loadedActors = true;
+    },
+
+    // Parse map data and create level
+    createGeometry: function() {
+        var self = this;
 
         // Initialize map geometry
         var vertices = [];
@@ -46,7 +64,6 @@ var Map = new Class({
 
         for (var j = 0, k = 0; j < this.data.height; j++) {
             for (var i = 0; i < this.data.width; i++, k++) {
-                var self = this;
                 var v = [vv(i,j), vv(i+1,j), vv(i+1,j+1), vv(i,j+1)];
                 vertices = vertices.concat([[v[0], v[1], v[2]], [v[0], v[2], v[3]]].flatten());
                 vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileCoords(this.data.tileMap[k]));
@@ -54,14 +71,7 @@ var Map = new Class({
         }
         this.vertexPosBuf = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
         this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
-
-        // Initialize actors
-        this.data.actors.each(function(a) {
-            var actor = new Actors[a.type](a);
-            self.actorDict[a.id] = actor;
-            self.actorList.push(actor);
-        });
-        this.loaded = true;
+        this.loadedGeometry = true;
     },
 
     // Calculate the height of a point in the map
@@ -97,7 +107,7 @@ var Map = new Class({
     },
 
     draw: function() {
-        if (!this.loaded)
+        if (!this.loadedGeometry || !this.loadedActors)
             return;
 
         mvPushMatrix();

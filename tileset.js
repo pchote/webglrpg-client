@@ -5,34 +5,70 @@
 
 // Tile definition
 // TODO: handle walkability info, etc 
-Tile = function(u, v) {
-    this.u = u;
-    this.v = v;
+
+var TilesetLoader = {
+    tilesets: {},
+
+    load: function(name) {
+        var ts = this.tilesets[name];
+        if (ts)
+            return ts;
+
+        this.tilesets[name] = ts = new Tileset();
+        var file = "tilesets/"+name+".ts";
+        new Request.JSON({
+            url: file,
+            method: 'get',
+            link: 'chain',
+            secure: true,
+            onSuccess: function(json) { ts.dataRecieved(json) },
+            onFailure: function() { console.error("Error fetching map "+file)},
+            onError: function(text, error) {
+                console.error("Error parsing map file "+file+": "+error );
+                console.error(text);
+            },
+        }).send();
+
+        return this.tilesets[name];
+    }
 }
 
 var Tileset = new Class({
-    // Tileset from http://opengameart.org/content/desert-tileset-0
-    src: "desert_1.gif",
-    srcWidth: 256,
-    srcHeight: 512,
-    tileSize: 16,
-    
-    tiles: {
-        1: new Tile(16, 16), // Grass
-        0: new Tile(16, 64)  // Water
-    },
+    src: null,
+    sheetSize: [0,0],
+    tileSize: 0,
+    tiles: {},
 
-    initialize: function() {
+    loaded: false,
+    loadActions: [],
+
+    // Received tileset definition JSON
+    dataRecieved: function(data) {
+        // Merge tileset definition into this object
+        Object.merge(this, data);
         this.texture = renderer.createTexture(this.src);
+
+        // Run whenReady actions
+        this.loaded = true;
+        this.loadActions.each(function(a) { a() });
+        this.loadActions.length = 0;
     },
 
-    // Return the texture uv coords for the vertices of a tile
+    // Add an action to run after the tileset has loaded
+    whenReady: function(func) {
+        if (this.loaded)
+            func(); // Already loaded, run immediately
+        else
+            this.loadActions.push(func); // Add to queue
+    },
+
+    // Get the texture uv coords for a tile
     getTileCoords: function(tileIndex) {
         var t = this.tiles[tileIndex];
-        var u0 = t.u*1.0/this.srcWidth;
-        var u1 = (t.u+this.tileSize)*1.0/this.srcWidth;
-        var v0 = 1.0 - t.v*1.0/this.srcHeight;
-        var v1 = 1.0 - (t.v+this.tileSize)*1.0/this.srcHeight;
+        var u0 = t.u*1.0/this.sheetSize[0];
+        var u1 = (t.u+this.tileSize)*1.0/this.sheetSize[0];
+        var v0 = 1.0 - t.v*1.0/this.sheetSize[1];
+        var v1 = 1.0 - (t.v+this.tileSize)*1.0/this.sheetSize[1];
         return [u0,v0,u1,v0,u1,v1,u0,v0,u1,v1,u0,v1];
     }
 });
