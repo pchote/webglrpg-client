@@ -18,12 +18,19 @@ var Renderer = new Class({
     textures: {},
 
     initialize: function(canvasId) {
-    	var canvas = document.getElementById("glcanvas");
-    	gl = WebGLUtils.setupWebGL(canvas);
-    	if (!gl) {
-    	    console.error("Unable to start webgl");
-    	    return;
-    	}
+    	if (!window.WebGLRenderingContext) {
+            showError("Your browser doesn't support WebGL." +
+                '<br /><br /><a href="http://get.webgl.org">Get one that does</a>');
+            return;
+        }
+
+        var canvas = document.getElementById(canvasId);
+        gl = WebGLUtils.create3DContext(canvas);
+        if (!gl) {
+            showError("Your computer doesn't appear to support WebGL." +
+                '<br /><br /><a href="http://get.webgl.org">Find out more</a>');
+            return;
+        }
 
         gl.viewportWidth = canvas.width;
         gl.viewportHeight = canvas.height;

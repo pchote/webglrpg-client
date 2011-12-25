@@ -21,6 +21,13 @@ function tick() {
     lastTime = timeNow;
 }
 
+function showError(msg) {
+    $('loadscreen').setStyle('display', 'none');
+    $('glcanvas').setStyle('display', 'none');
+    $('errorscreen').setStyle('display', 'block');
+    $('errormessage').set('html', msg);
+};
+
 var mapLoaded = false;
 var actorsLoaded = false;
 var texturesLoaded = false;
