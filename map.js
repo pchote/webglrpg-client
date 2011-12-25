@@ -26,8 +26,10 @@ var Map = new Class({
         ],
         actors: [
            { id: "e1", type: "elemental", x:2, y:3, facing:"down" },
-           { id: "e2", type: "elemental", x:3, y:2 },
-           { id: "player", type: "player", x:0, y:0 },
+           { id: "e2", type: "elemental", x:3, y:2, facing:"left" },
+           { id: "e3", type: "elemental", x:1, y:2, facing:"right" },
+           { id: "e4", type: "elemental", x:2, y:1, facing:"up" },
+           { id: "player", type: "player" },
         ],
     },
 
