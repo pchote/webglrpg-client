@@ -4,34 +4,10 @@
 // See LICENSE.html for the license terms.
 
 var Map = new Class({
+    loaded: false,
+
     // Map Data
-    // TODO: Load from a file
-    data: {
-        width: 5,
-        height: 5,
-        tileMap: [
-            1,1,1,1,1,
-            1,0,0,0,1,
-            1,0,0,0,1,
-            1,0,0,0,1,
-            1,1,1,1,1
-        ],
-        heightMap: [
-            0,0,1.0,1.0,0,0,
-            0,0,0.75,0.75,0,0,
-            0,0,0.5,0.5,0,0,
-            0,0,0.5,0.5,0,0,
-            0,0,0,0,0,0,
-            0,0,-0.5,-0.2,0,0
-        ],
-        actors: [
-           { id: "e1", type: "elemental", x:2, y:3, facing:"down" },
-           { id: "e2", type: "elemental", x:3, y:2, facing:"left" },
-           { id: "e3", type: "elemental", x:1, y:2, facing:"right" },
-           { id: "e4", type: "elemental", x:2, y:1, facing:"up" },
-           { id: "player", type: "player" },
-        ],
-    },
+    data: {},
 
     // Actors stored by key for easy lookup
     actorDict: {},
@@ -39,9 +15,28 @@ var Map = new Class({
     // Actors stored as an array for easy sorting and enumeration
     actorList: [],
 
-    initialize: function() {
-        this.tileset = new Tileset();
+    // Request the map data
+    initialize: function(file) {
         var self = this;
+        new Request.JSON({
+            url: file,
+            method: 'get',
+            link: 'chain',
+            secure: true,
+            onSuccess: function(json) { self.load(json) },
+            onFailure: function() { console.error("Error fetching map "+file)},
+            onError: function(text, error) {
+                console.error("Error parsing map file "+file+": "+error );
+                console.error(text);
+            },
+        }).send();
+    },
+
+    // Parse map data and create level
+    load: function(data) {
+        var self = this;
+        this.data = data;
+        this.tileset = new Tileset();
 
         // Initialize map geometry
         var vertices = [];
@@ -66,6 +61,7 @@ var Map = new Class({
             self.actorDict[a.id] = actor;
             self.actorList.push(actor);
         });
+        this.loaded = true;
     },
 
     // Calculate the height of a point in the map
@@ -101,6 +97,9 @@ var Map = new Class({
     },
 
     draw: function() {
+        if (!this.loaded)
+            return;
+
         mvPushMatrix();
         renderer.setCamera();
         renderer.bindBuffer(this.vertexPosBuf, shaderProgram.vertexPositionAttribute);
