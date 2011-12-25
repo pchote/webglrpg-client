@@ -11,9 +11,7 @@ var lastTime = 0;
 function tick() {
     requestAnimFrame(tick);
     renderer.drawScene(function() {
-            map.draw();
-            player.draw();
-            elemental.draw();
+        map.draw();
     });
 
     var timeNow = new Date().getTime();
@@ -35,6 +33,8 @@ function start() {
 
     map = new Map();
     player = new Player();
-    elemental = new Elemental();
+    map.actors.push(player);
+    map.actors.push(new Elemental());
+
     tick();
 }

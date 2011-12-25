@@ -26,6 +26,7 @@ var Map = new Class({
         ],
     },
 
+    actors: [],
     initialize: function() {
         this.tileset = new Tileset();
 
@@ -89,6 +90,10 @@ var Map = new Class({
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
 
         mvPopMatrix();
+
+        // Sort actors by draw order and render
+        this.actors.sort(function(a,b) { return b.pos[1] - a.pos[1]; })
+        this.actors.each(function(a) { a.draw(); });
     },
 
     tick: function(dt) {},
