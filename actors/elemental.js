@@ -3,7 +3,7 @@
 // GNU General Public License, as published by the Free Software Foundation.
 // See LICENSE.html for the license terms.
 
-var Elemental = new Class({
+Actors["elemental"] = new Class({
     Extends: Actor,
 
     // Character art from http://opengameart.org/content/twelve-16x18-rpg-character-sprites-including-npcs-and-elementals

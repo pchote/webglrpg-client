@@ -24,12 +24,24 @@ var Map = new Class({
             0,0,0,0,0,0,
             0,0,-0.5,-0.2,0,0
         ],
+        actors: [
+           { id: "e1", type: "elemental", x:2, y:3, facing:"down" },
+           { id: "e2", type: "elemental", x:3, y:2 },
+           { id: "player", type: "player", x:0, y:0 },
+        ],
     },
 
-    actors: [],
+    // Actors stored by key for easy lookup
+    actorDict: {},
+
+    // Actors stored as an array for easy sorting and enumeration
+    actorList: [],
+
     initialize: function() {
         this.tileset = new Tileset();
+        var self = this;
 
+        // Initialize map geometry
         var vertices = [];
         var vertexTexCoords = [];
         var w = (this.data.width + 1);
@@ -45,6 +57,13 @@ var Map = new Class({
         }
         this.vertexPosBuf = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
         this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
+
+        // Initialize actors
+        this.data.actors.each(function(a) {
+            var actor = new Actors[a.type](a);
+            self.actorDict[a.id] = actor;
+            self.actorList.push(actor);
+        });
     },
 
     // Calculate the height of a point in the map
@@ -92,9 +111,11 @@ var Map = new Class({
         mvPopMatrix();
 
         // Sort actors by draw order and render
-        this.actors.sort(function(a,b) { return b.pos[1] - a.pos[1]; })
-        this.actors.each(function(a) { a.draw(); });
+        this.actorList.sort(function(a,b) { return b.pos[1] - a.pos[1]; })
+        this.actorList.each(function(a) { a.draw(); });
     },
 
-    tick: function(dt) {},
+    tick: function(dt) {
+        this.actorList.each(function(a) { a.tick(dt); });
+    },
 });

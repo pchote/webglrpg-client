@@ -3,7 +3,7 @@
 // GNU General Public License, as published by the Free Software Foundation.
 // See LICENSE.html for the license terms.
 
-var Player = new Class({
+Actors["player"] = new Class({
     Extends: Actor,
 
     // Character art from http://opengameart.org/content/chara-seth-scorpio
@@ -36,10 +36,11 @@ var Player = new Class({
             {u: 24, v: 96}
         ]
     },
-
-    pos: vec3.create([1,0,0]),
     drawOffset: vec3.create([-0.25, 0, 0]),
     hotspotOffset: vec3.create([0.5, 0.5, 0]),
+
+    // Should the camera follow the player?
+    bindCamera: true,
 
     accumTime: 0,
     lastFacing: this.Facings.Right,
@@ -87,5 +88,8 @@ var Player = new Class({
         var hx = this.pos[0]+this.hotspotOffset[0];
         var hy = this.pos[1]+this.hotspotOffset[1];
         this.pos[2] = map.getHeight(hx, hy);
+
+        if (this.bindCamera)
+            vec3.set(this.pos, renderer.cameraPosition);
     }
 });

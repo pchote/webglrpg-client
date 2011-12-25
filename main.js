@@ -5,8 +5,7 @@
 
 var map;
 var renderer;
-var player;
-var elemental;
+
 var lastTime = 0;
 function tick() {
     requestAnimFrame(tick);
@@ -18,23 +17,17 @@ function tick() {
     if (lastTime != 0) {
         var elapsed = timeNow - lastTime;
         map.tick(elapsed);
-        player.tick(elapsed);
     }
     lastTime = timeNow;
 }
 
 function start() {
     renderer = new Renderer("glcanvas");
-    if (!renderer.initializedWebGl)
-    {
+    if (!renderer.initializedWebGl) {
         console.error("Renderer init failed - exiting");
         return;
     }
 
     map = new Map();
-    player = new Player();
-    map.actors.push(player);
-    map.actors.push(new Elemental());
-
     tick();
 }

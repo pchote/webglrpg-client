@@ -4,6 +4,7 @@
 // See LICENSE.html for the license terms.
 
 var Facings = {Left : "left", Right : "right", Up : "up", Down : "down"};
+var Actors = [];
 
 var Actor = new Class({
     src: null,
@@ -17,7 +18,16 @@ var Actor = new Class({
     pos: vec3.create(),
     facing: Facings.Right,
 
-    initialize: function() {
+    initialize: function(data) {
+        if (data) {
+            if (data.x)
+                this.pos[0] = data.x;
+            if (data.y)
+                this.pos[1] = data.y;
+            if (data.facing)
+                this.facing = data.facing;
+        }
+
         this.texture = renderer.createTexture(this.src);
         var vv = function(i,j) { return [i, 0, j] };
         var v = [vv(0,0), vv(this.size.w/16, 0), vv(this.size.w/16, this.size.h/16), vv(0, this.size.h/16)];
