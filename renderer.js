@@ -10,8 +10,12 @@ var mvMatrixStack = [];
 var pMatrix = mat4.create();
 
 var Renderer = new Class({
+    // Loading flags
     initializedWebGl: false,
     loadedShaders: false,
+
+    // Texture cache
+    textures: {},
 
     initialize: function(canvasId) {
     	var canvas = document.getElementById("glcanvas");
@@ -126,22 +130,25 @@ var Renderer = new Class({
     },
 
     createTexture: function(src) {
-        var texture = gl.createTexture();
-        texture.image = new Image();
-        texture.loaded = false;
+        if (this.textures[src])
+            return this.textures[src];
 
-        texture.image.onload = function() {
-            console.log("loaded image "+texture.image.src);
-            gl.bindTexture(gl.TEXTURE_2D, texture);
+        var t = gl.createTexture();
+        t.image = new Image();
+        t.loaded = false;
+        t.image.onload = function() {
+            console.log("loaded image "+t.image.src);
+            gl.bindTexture(gl.TEXTURE_2D, t);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t.image);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             gl.bindTexture(gl.TEXTURE_2D, null);
-            texture.loaded = true;
+            t.loaded = true;
         };
-        texture.image.src = src;
-        return texture;
+        t.image.src = src;
+        this.textures[src] = t;
+        return t;
     },
 
     bindTexture: function(texture) {
