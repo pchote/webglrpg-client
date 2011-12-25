@@ -44,7 +44,7 @@ var Map = new Class({
         this.tileset.whenLoaded(function() { self.createGeometry() });
 
         // Load actors
-        data.actors.each(function(a) { self.addActor(a.id, a.type, a) });
+        data.actors.each(function(a) { self.addActor(a) });
         this.loadedActors = true;
     },
 
@@ -71,9 +71,9 @@ var Map = new Class({
     },
 
     // Instantiate and add an actor to the map
-    addActor: function (id, type, data) {
-        var a = ActorLoader.load(type, data);
-        this.actorDict[id] = a;
+    addActor: function (data) {
+        var a = ActorLoader.load(data.type, data);
+        this.actorDict[data.id] = a;
         this.actorList.push(a);
     },
 

@@ -58,6 +58,7 @@ def = {
                 if (this.pos[0] >= map.data.width - 1) {
                     this.pos[0] = map.data.width - 1;
                     this.facing = Facings.Up;
+                    map.addActor({id: "test", type: "water_elemental", x:2, y:2, facing: "down"});
                 }
             break;
             case Facings.Up:
@@ -65,6 +66,7 @@ def = {
                 if (this.pos[1] >= map.data.height - 1) {
                     this.pos[1] = map.data.height - 1;
                     this.facing = Facings.Left;
+                    map.removeActor("test");
                 }
             break;
             case Facings.Left:
