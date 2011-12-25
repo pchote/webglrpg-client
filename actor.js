@@ -4,9 +4,58 @@
 // See LICENSE.html for the license terms.
 
 var Facings = {Left : "left", Right : "right", Up : "up", Down : "down"};
-var Actors = [];
+var ActorLoader = {
+    actorTypes: [],
+
+    // Instances that require loading
+    actorInstances: {},
+
+    load: function(type, data) {
+        // Actor hasn't been loaded - create a skeleton class and return an instance
+        // The class will be extended with real behavior after load, updating all instances
+        if (typeof(this.actorTypes[type]) === 'undefined') {
+            this.actorTypes[type] = new Class({
+                Extends: Actor
+            });
+
+            this.actorInstances[type] = [];
+            var self = this;
+            var file = "actors/"+type+".js";
+            new Request({
+                url: file,
+                method: 'get',
+                link: 'chain',
+                onSuccess: function(json) {
+                    var def = {};
+                    try {
+                        eval(json);
+                    }
+                    catch (e) {
+                        console.log("Error evaluating actor definition: "+file);
+                        console.log(e);
+                    }
+                    self.actorTypes[type].implement(def);
+                    self.actorTypes[type].implement({ templateLoaded: true });
+
+                    // Instantiate existing actor instances
+                    self.actorInstances[type].each(function(i) { i.instance.whenLoaded(i.data); });
+                },
+                onFailure: function() { console.error("Error fetching actor definition: "+file)},
+            }).send();
+        }
+
+        var instance = new this.actorTypes[type]();
+        if (instance.templateLoaded)
+            instance.whenLoaded(data);
+        else
+            this.actorInstances[type].push({'instance' : instance, 'data' : data});
+
+        return instance;
+    }
+}
 
 var Actor = new Class({
+    templateLoaded: false,
     src: null,
     srcSize: {w:0, h:0},
     size: {w:0, h:0},
@@ -18,8 +67,10 @@ var Actor = new Class({
     pos: vec3.create(),
     facing: Facings.Right,
 
-    initialize: function(data) {
+    whenLoaded: function(data) {
         if (data) {
+            if (data.id)
+                this.id = data.id;
             if (data.x)
                 this.pos[0] = data.x;
             if (data.y)
@@ -37,6 +88,7 @@ var Actor = new Class({
 
         this.vertexPosBuf = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
         this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, gl.DYNAMIC_DRAW, 2);
+        this.loaded = true;
     },
 
     getTexCoords: function(i) {
@@ -50,10 +102,13 @@ var Actor = new Class({
     },
 
     draw: function() {
+        if (!this.loaded)
+            return;
+
         mvPushMatrix();
         renderer.setCamera();
         mat4.translate(mvMatrix, this.pos);
-        
+
         // Undo rotation so that character plane is normal to LOS
         mat4.rotate(mvMatrix, degToRad(-renderer.cameraAngle), [1, 0, 0]);
         mat4.translate(mvMatrix, this.drawOffset);

@@ -28,6 +28,6 @@ function start() {
         return;
     }
 
-    map = new Map("maps/test.map");
+    map = new Map("test");
     tick();
 }

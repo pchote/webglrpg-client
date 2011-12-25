@@ -55,7 +55,7 @@ var Tileset = new Class({
     },
 
     // Add an action to run after the tileset has loaded
-    whenReady: function(func) {
+    whenLoaded: function(func) {
         if (this.loaded)
             func(); // Already loaded, run immediately
         else

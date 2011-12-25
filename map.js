@@ -17,7 +17,8 @@ var Map = new Class({
     actorList: [],
 
     // Request the map data
-    initialize: function(file) {
+    initialize: function(name) {
+        var file = "maps/"+name+".map";
         var self = this;
         new Request.JSON({
             url: file,
@@ -39,16 +40,11 @@ var Map = new Class({
         var self = this;
 
         // Load tileset if necessary, then create level geometry
-        console.log(data.tileset);
         this.tileset = TilesetLoader.load(data.tileset);
-        this.tileset.whenReady(function() { self.createGeometry() });
+        this.tileset.whenLoaded(function() { self.createGeometry() });
 
         // Load actors
-        data.actors.each(function(a) {
-            var actor = new Actors[a.type](a);
-            self.actorDict[a.id] = actor;
-            self.actorList.push(actor);
-        });
+        data.actors.each(function(a) { self.addActor(a.id, a.type, a) });
         this.loadedActors = true;
     },
 
@@ -72,6 +68,20 @@ var Map = new Class({
         this.vertexPosBuf = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
         this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
         this.loadedGeometry = true;
+    },
+
+    // Instantiate and add an actor to the map
+    addActor: function (id, type, data) {
+        var a = ActorLoader.load(type, data);
+        this.actorDict[id] = a;
+        this.actorList.push(a);
+    },
+
+    // Remove an actor from the map
+    removeActor: function (id) {
+        var a = this.actorDict[id];
+        this.actorList.erase(a);
+        delete this.actorDict[id];
     },
 
     // Calculate the height of a point in the map

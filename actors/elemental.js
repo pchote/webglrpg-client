@@ -3,9 +3,7 @@
 // GNU General Public License, as published by the Free Software Foundation.
 // See LICENSE.html for the license terms.
 
-Actors["elemental"] = new Class({
-    Extends: Actor,
-
+def = {
     // Character art from http://opengameart.org/content/twelve-16x18-rpg-character-sprites-including-npcs-and-elementals
     src: "elemental.gif",
     srcSize: {w:64, h:128},
@@ -40,4 +38,4 @@ Actors["elemental"] = new Class({
     hotspotOffset: vec3.create([0.5, 0.5, 0]),
     
     pos: vec3.create([2,3,0.5]),
-});
+};

@@ -3,9 +3,7 @@
 // GNU General Public License, as published by the Free Software Foundation.
 // See LICENSE.html for the license terms.
 
-Actors["player"] = new Class({
-    Extends: Actor,
-
+def = {
     // Character art from http://opengameart.org/content/chara-seth-scorpio
     src: "player.gif",
     srcSize: {w:128, h:256},
@@ -43,7 +41,7 @@ Actors["player"] = new Class({
     bindCamera: true,
 
     accumTime: 0,
-    lastFacing: this.Facings.Right,
+    lastFacing: Facings.Right,
     tick: function(dt) {
         this.accumTime += dt;
         if (this.accumTime > 250 || this.facing != this.lastFacing) {
@@ -92,4 +90,4 @@ Actors["player"] = new Class({
         if (this.bindCamera)
             vec3.set(this.pos, renderer.cameraPosition);
     }
-});
+};
