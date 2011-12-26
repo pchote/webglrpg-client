@@ -192,16 +192,15 @@ Activities.Move = new Class({
     initialize: function(from, to, length) {
         this.from = vec3.create(from);
         this.to = vec3.create(to);
-        vec3.subtract(to, from, this.delta);
+        this.facing = Facings.fromDelta([Math.round(to[0] - from[0]), Math.round(to[1] - from[1])]);
         this.length = length;
     },
 
     tick: function(a, args) {
         // Set facing
         if (this.accumTime == 0) {
-            var facing = Facings.fromDelta(this.delta);
-            if (facing != a.facing)
-                return [new Activities.Face(facing), this];
+            if (this.facing != a.facing)
+                return [new Activities.Face(this.facing), this];
         }
 
         var newTime = this.accumTime + args.dt;
@@ -254,11 +253,10 @@ Activities.InputWatcher = new Class({
         }
 
         var from = vec3.create(a.pos);
-        var to = vec3.create();
-        var dp = Activities.InputWatcher.DirectionOffsets[dirKey]; dp[2] = 0;
-        vec3.add(from, dp, to);
+        var dp = Activities.InputWatcher.DirectionOffsets[dirKey];
+        var to = vec3.create([Math.round(from[0] + dp[0]), Math.round(from[1] + dp[1]), 0]);
         var facing = Facings.fromDelta(dp);
-        if (!map.canEnterTile(Math.round(to[0]), Math.round(to[1]), facing)) {
+        if (!map.canEnterTile(to[0], to[1], facing)) {
             args.dt = 0;
             return [new Activities.Face(facing), this];
         }
