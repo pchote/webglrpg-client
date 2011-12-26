@@ -55,14 +55,14 @@ var Map = new Class({
         // Initialize map geometry
         var vertices = [];
         var vertexTexCoords = [];
-        var w = (this.data.width + 1);
-        var vv = function(i,j) { return [i, j, self.data.heightMap[w*j + i]] };
 
+        var tt = this.data.tileType;
+        var th = this.data.tileHeight;
+        var tx = this.data.tileTexture;
         for (var j = 0, k = 0; j < this.data.height; j++) {
             for (var i = 0; i < this.data.width; i++, k++) {
-                var v = [vv(i,j), vv(i+1,j), vv(i+1,j+1), vv(i,j+1)];
-                vertices = vertices.concat([[v[0], v[1], v[2]], [v[0], v[2], v[3]]].flatten());
-                vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileCoords(this.data.tileMap[k]));
+                vertices = vertices.concat(this.tileset.getTileVertices(tt[k], vec3.create([i,j,th[k]])));
+                vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileTexCoords(tt[k], tx[k]));
             }
         }
         this.vertexPosBuf = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
@@ -90,30 +90,10 @@ var Map = new Class({
             console.error("Requesting height for ["+x+","+y+"] outside of map bounds");
             return 0;
         }
-
         var i = Math.floor(x)
         var j = Math.floor(y);
-        var dxy = vec3.create([x - i, y - j, 0]);
 
-        // Vertex heights
-        var w = (this.data.width + 1);
-        var v = [
-            vec3.create([0, 0, this.data.heightMap[w*j + i]]),
-            vec3.create([1, 0, this.data.heightMap[w*j + i + 1]]),
-            vec3.create([1, 1, this.data.heightMap[w*(j + 1)  + i + 1]]),
-            vec3.create([0, 1, this.data.heightMap[w*(j + 1) + i]])
-        ];
-
-        // Pick 3 points to define the plane
-        var p = (dxy[0] - dxy[1] > 0) ? [v[0], v[1], v[2]] : [v[0], v[2], v[3]];
-
-        // Calculate intersection of line with plane
-        var n = vec3.create();
-        vec3.subtract(p[1], p[0]);
-        vec3.subtract(p[2], p[0]);
-        vec3.cross(p[1], p[2], n);
-        vec3.subtract(p[0], dxy);
-        return vec3.dot(p[0], n) / n[2];
+        return this.data.tileHeight[j*this.data.width + i];
     },
 
     draw: function() {

@@ -62,13 +62,22 @@ var Tileset = new Class({
             this.loadActions.push(func); // Add to queue
     },
 
-    // Get the texture uv coords for a tile
-    getTileCoords: function(tileIndex) {
-        var t = this.tiles[tileIndex];
-        var u0 = t.u*1.0/this.sheetSize[0];
-        var u1 = (t.u+this.tileSize)*1.0/this.sheetSize[0];
-        var v0 = 1.0 - t.v*1.0/this.sheetSize[1];
-        var v1 = 1.0 - (t.v+this.tileSize)*1.0/this.sheetSize[1];
-        return [u0,v0,u1,v0,u1,v1,u0,v0,u1,v1,u0,v1];
+    getTileVertices: function(id, offset) {
+        return this.tileGeometry[id].v.map(function(poly) {
+            return poly.map(function(v) {
+                return [v[0] + offset[0], v[1] + offset[1], v[2] + offset[2]];
+            });
+        }).flatten();
+    },
+
+    getTileTexCoords: function(id, texId) {
+        var o = this.tiles[texId];
+        var ss = this.sheetSize;
+        var ts = this.tileSize;
+        return this.tileGeometry[id].t.map(function(poly) {
+            return poly.map(function(v) {
+                return [(v[0]*ts + o[0])/ss[0], 1 - (v[1]*ts + o[1])/ss[1]];
+            });
+        }).flatten();
     }
 });
