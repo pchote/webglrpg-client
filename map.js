@@ -131,5 +131,11 @@ var Map = new Class({
 
     runAfterTick: function(a) {
         this.afterTick.push(a);
+    },
+
+    canEnterTile: function(x, y, direction) {
+        if (x < 0 || y < 0 || x >= this.data.width || y >= this.data.height)
+            return false;
+        return this.tileset.isWalkable(this.data.tileType[y*this.data.width + x], direction);
     }
 });

@@ -3,7 +3,24 @@
 // GNU General Public License, as published by the Free Software Foundation.
 // See LICENSE.html for the license terms.
 
-var Facings = {Left : "left", Right : "right", Up : "up", Down : "down"};
+var Facings = {
+    None: 0,
+    Right: 1,
+    Up: 2,
+    Left: 4,
+    Down: 8,
+    fromDelta: function(dp) {
+        if (dp[0] > 0)
+            return Facings.Right;
+        if (dp[0] < 0)
+            return Facings.Left;
+        if (dp[1] > 0)
+            return Facings.Up;
+        if (dp[1] < 0)
+            return Facings.Down;
+        return 0;
+    }
+};
 var ActorLoader = {
     actorTypes: [],
 
@@ -97,7 +114,12 @@ var Actor = new Class({
     },
 
     getTexCoords: function(i) {
-        var t = this.frames[this.facing][this.animFrame % 4];
+        var facingFrameMap = {};
+        facingFrameMap[Facings.Left] = "left";
+        facingFrameMap[Facings.Right] = "right";
+        facingFrameMap[Facings.Up] = "up";
+        facingFrameMap[Facings.Down] = "down";
+        var t = this.frames[facingFrameMap[this.facing]][this.animFrame % 4];
         var u1 = t.u*1.0/this.srcSize.w;
         var u0 = (t.u+this.size.w)*1.0/this.srcSize.w;
         var v0 = 1.0 - t.v*1.0/this.srcSize.h;
@@ -149,10 +171,10 @@ var Actor = new Class({
         while (dt > 0) {
             // Remove and tick the first item in the queue
             var ret = this.activityQueue.shift().tick(this, args);
+
             // Insert returned actions back into the queue
             for (var i = ret.length-1; i >= 0; i--)
-                if (ret[i] != null)
-                    this.activityQueue.splice(0, 0, ret[i]);
+                this.activityQueue.splice(0, 0, ret[i]);
             dt = args.dt;
         }
     },
@@ -165,23 +187,21 @@ var Activities = {}
 Activities.Move = new Class({
     type: "Move",
     accumTime: 0,
+    delta: vec3.create(),
+
     initialize: function(from, to, length) {
         this.from = vec3.create(from);
         this.to = vec3.create(to);
+        vec3.subtract(to, from, this.delta);
         this.length = length;
     },
 
     tick: function(a, args) {
         // Set facing
         if (this.accumTime == 0) {
-            if (this.to[0] > this.from[0])
-                a.facing = Facings.Right;
-            else if (this.to[0] < this.from[0])
-                a.facing = Facings.Left;
-            if (this.to[1] > this.from[1])
-                a.facing = Facings.Up;
-            else if (this.to[1] < this.from[1])
-                a.facing = Facings.Down;
+            var facing = Facings.fromDelta(this.delta);
+            if (facing != a.facing)
+                return [new Activities.Face(facing), this];
         }
 
         var newTime = this.accumTime + args.dt;
@@ -205,7 +225,21 @@ Activities.Move = new Class({
         var hy = a.pos[1]+a.hotspotOffset[1];
         a.pos[2] = map.getHeight(hx, hy);
 
-        return (this.accumTime < this.length) ? [this] : [null];
+        return (this.accumTime < this.length) ? [this] : [];
+    }
+});
+
+Activities.Face = new Class({
+    type: "Face",
+
+    initialize: function(facing) {
+        this.facing = facing;
+    },
+
+    tick: function(a, args) {
+        a.facing = this.facing;
+        a.setFrame(0);
+        return [];
     }
 });
 
@@ -223,7 +257,13 @@ Activities.InputWatcher = new Class({
         var to = vec3.create();
         var dp = Activities.InputWatcher.DirectionOffsets[dirKey]; dp[2] = 0;
         vec3.add(from, dp, to);
-        var animLength = 750; // move time in ms
+        var facing = Facings.fromDelta(dp);
+        if (!map.canEnterTile(Math.round(to[0]), Math.round(to[1]), facing)) {
+            args.dt = 0;
+            return [new Activities.Face(facing), this];
+        }
+
+        var animLength = 600; // move time in ms
         return [new Activities.Move(a.pos, to, animLength), this];
     }
 });

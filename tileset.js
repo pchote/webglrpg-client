@@ -70,6 +70,10 @@ var Tileset = new Class({
         }).flatten();
     },
 
+    isWalkable: function(tileId, direction) {
+        return this.tileGeometry[tileId].w & direction;
+    },
+
     getTileTexCoords: function(id, texId) {
         var o = this.tiles[texId];
         var ss = this.sheetSize;
