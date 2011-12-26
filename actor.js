@@ -27,12 +27,15 @@ var ActorLoader = {
                 link: 'chain',
                 onSuccess: function(json) {
                     var def = {};
-                    try {
-                        eval(json);
-                    }
+                    try { eval(json); }
                     catch (e) {
-                        console.log("Error evaluating actor definition: "+file);
-                        console.log(e);
+                        var lineNumber = '';
+                        // Dirty browser specific hack to determine line number in loaded file
+                        if (e.lineNumber)
+                            lineNumber = e.lineNumber - new Error().lineNumber + 6;
+
+                        console.log("Error loading "+file+":"+lineNumber);
+                        console.log(e.message);
                     }
                     self.actorTypes[type].implement(def);
                     self.actorTypes[type].implement({ templateLoaded: true });
