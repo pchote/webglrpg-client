@@ -71,8 +71,8 @@ var Actor = new Class({
         if (data) {
             if (data.id)
                 this.id = data.id;
-            if (data.x)
-                this.pos[0] = data.x;
+            if (data.pos)
+                vec3.set(data.pos, this.pos);
             if (data.y)
                 this.pos[1] = data.y;
             if (data.facing)

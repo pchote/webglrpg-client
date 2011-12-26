@@ -36,6 +36,6 @@ def = {
     },
     drawOffset: vec3.create([0, 0, 0]),
     hotspotOffset: vec3.create([0.5, 0.5, 0]),
-    
-    pos: vec3.create([2,3,0.5]),
+
+    pos: vec3.create(),
 };

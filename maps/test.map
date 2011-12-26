@@ -20,14 +20,13 @@
 		0,0,0,0,0,
 	    10,10,10,10,10,
 	    0,0,0,0,0,
-	    0,0,0,0,0,
-	    0,0,0,0,0
+	    2,3,3,3,4,
+	    5,1,1,1,6
 	],
 	"actors": [
-	   { "id": "e1", "type": "elemental", "x":2, "y":3, "facing":"down" },
-	   { "id": "e2", "type": "elemental", "x":3, "y":2, "facing":"left" },
-	   { "id": "e3", "type": "elemental", "x":1, "y":2, "facing":"right" },
-	   { "id": "e4", "type": "elemental", "x":2, "y":1, "facing":"up" },
+	   { "id": "e1", "type": "elemental", "pos":[1,2,2], "facing":"down" },
+	   { "id": "e2", "type": "elemental", "pos":[2,2,2], "facing":"left" },
+	   { "id": "e3", "type": "elemental", "pos":[3,2,2], "facing":"right" },
 	   { "id": "player", "type": "player" }
 	]
 }
