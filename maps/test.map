@@ -27,6 +27,6 @@
 	   { "id": "e1", "type": "elemental", "pos":[1,2,2], "facing":"down" },
 	   { "id": "e2", "type": "elemental", "pos":[2,2,2], "facing":"left" },
 	   { "id": "e3", "type": "elemental", "pos":[3,2,2], "facing":"right" },
-	   { "id": "player", "type": "player" }
+	   { "id": "player", "type": "player", "pos":[3,0,0] }
 	]
 }

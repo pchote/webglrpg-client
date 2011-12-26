@@ -40,56 +40,7 @@ def = {
     // Should the camera follow the player?
     bindCamera: true,
 
-    accumTime: 0,
-    lastFacing: Facings.Right,
-    tick: function(dt) {
-        this.accumTime += dt;
-        if (this.accumTime > 250 || this.facing != this.lastFacing) {
-            this.accumTime = 0;
-            this.animFrame++;
-            renderer.updateBuffer(this.vertexTexBuf, this.getTexCoords());
-            this.lastFacing = this.facing;
-        }
-
-        switch (this.facing)
-        {
-            case Facings.Right:
-                this.pos[0] += dt/1000;
-                if (this.pos[0] >= map.data.width - 1) {
-                    this.pos[0] = map.data.width - 1;
-                    this.facing = Facings.Up;
-                    map.addActor({id: "test", type: "water_elemental", x:2, y:2, facing: "down"});
-                }
-            break;
-            case Facings.Up:
-                this.pos[1] += dt/1000;
-                if (this.pos[1] >= map.data.height - 1) {
-                    this.pos[1] = map.data.height - 1;
-                    this.facing = Facings.Left;
-                    map.removeActor("test");
-                }
-            break;
-            case Facings.Left:
-                this.pos[0] -= dt/1000;
-                if (this.pos[0] <= 0) {
-                    this.pos[0] = 0;
-                    this.facing = Facings.Down;
-                }
-            break;
-            case Facings.Down:
-                this.pos[1] -= dt/1000;
-                if (this.pos[1] <= 0) {
-                    this.pos[1] = 0;
-                    this.facing = Facings.Right;
-                }
-            break;
-        }
-
-        var hx = this.pos[0]+this.hotspotOffset[0];
-        var hy = this.pos[1]+this.hotspotOffset[1];
-        this.pos[2] = map.getHeight(hx, hy);
-
-        if (this.bindCamera)
-            vec3.set(this.pos, renderer.cameraPosition);
+    init: function() {
+        this.addActivity(new Activities.InputWatcher());
     }
 };

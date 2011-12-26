@@ -68,6 +68,9 @@ var Map = new Class({
         this.vertexPosBuf = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
         this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
         this.loadedGeometry = true;
+
+        // Initialize actors
+        this.actorList.each(function(a) { if(a.loaded) a.init(); });
     },
 
     // Instantiate and add an actor to the map
@@ -116,11 +119,11 @@ var Map = new Class({
         this.actorList.each(function(a) { a.draw(); });
     },
 
-    // Actions to run after the map ticks
-    // Actions should return a new action to run in the next tick, or null
+    // Activities to run after the map ticks
+    // Activities should return a new action to run in the next tick, or null
     afterTick: [],
     tick: function(dt) {
-        this.actorList.each(function(a) { a.tick(dt); });
+        this.actorList.each(function(a) { if (a.tick) a.tick(dt); });
 
         if (this.afterTick.length)
             this.afterTick = this.afterTick.map(function(a) { return a(); }).clean();

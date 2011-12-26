@@ -92,6 +92,8 @@ var Actor = new Class({
         this.vertexPosBuf = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
         this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, gl.DYNAMIC_DRAW, 2);
         this.loaded = true;
+        if(map.loadedGeometry)
+            this.init();
     },
 
     getTexCoords: function(i) {
@@ -124,5 +126,111 @@ var Actor = new Class({
         mvPopMatrix();
     },
 
-    tick: function(dt) {}
+    setFrame: function(frame) {
+        this.animFrame = frame;
+        renderer.updateBuffer(this.vertexTexBuf, this.getTexCoords());
+    },
+
+    activityQueue: [],
+    addActivity: function(a) {
+        this.activityQueue.push(a);
+    },
+
+    clearActivityQueue: function() {
+        this.activityQueue.length = 0;
+    },
+
+    tick: function(dt) {
+        // dt will be decremented by actions
+        var args = {"dt": dt};
+        if (!this.activityQueue.length)
+            return;
+
+        while (dt > 0) {
+            // Remove and tick the first item in the queue
+            var ret = this.activityQueue.shift().tick(this, args);
+            // Insert returned actions back into the queue
+            for (var i = ret.length-1; i >= 0; i--)
+                if (ret[i] != null)
+                    this.activityQueue.splice(0, 0, ret[i]);
+            dt = args.dt;
+        }
+    },
+
+    // Called when the actor and map are fully loaded
+    init: function() {}
 });
+
+var Activities = {}
+Activities.Move = new Class({
+    type: "Move",
+    accumTime: 0,
+    initialize: function(from, to, length) {
+        this.from = vec3.create(from);
+        this.to = vec3.create(to);
+        this.length = length;
+    },
+
+    tick: function(a, args) {
+        // Set facing
+        if (this.accumTime == 0) {
+            if (this.to[0] > this.from[0])
+                a.facing = Facings.Right;
+            else if (this.to[0] < this.from[0])
+                a.facing = Facings.Left;
+            if (this.to[1] > this.from[1])
+                a.facing = Facings.Up;
+            else if (this.to[1] < this.from[1])
+                a.facing = Facings.Down;
+        }
+
+        var newTime = this.accumTime + args.dt;
+        if (newTime > this.length) {
+            args.dt -= this.accumTime - this.length;
+            newTime = this.length;
+        }
+        else
+            args.dt = 0;
+
+        var frac = this.accumTime/this.length;
+        var newFrame = Math.floor(frac*4);
+        if (newFrame != a.animFrame)
+            a.setFrame(newFrame);
+
+        this.accumTime = newTime;
+        vec3.lerp(this.from, this.to, frac, a.pos);
+
+        // Calculate new height
+        var hx = a.pos[0]+a.hotspotOffset[0];
+        var hy = a.pos[1]+a.hotspotOffset[1];
+        a.pos[2] = map.getHeight(hx, hy);
+
+        return (this.accumTime < this.length) ? [this] : [null];
+    }
+});
+
+Activities.InputWatcher = new Class({
+    type: "InputWatcher",
+    tick: function(a, args) {
+        var dirKey = Keyboard.lastPressed('wsad');
+        if (!dirKey) {
+            // Eat any remaining time
+            args.dt = 0;
+            return [this];
+        }
+
+        var from = vec3.create(a.pos);
+        var to = vec3.create();
+        var dp = Activities.InputWatcher.DirectionOffsets[dirKey]; dp[2] = 0;
+        vec3.add(from, dp, to);
+        var animLength = 750; // move time in ms
+        return [new Activities.Move(a.pos, to, animLength), this];
+    }
+});
+
+Activities.InputWatcher.DirectionOffsets = {
+    'W': [0,1],
+    'S': [0,-1],
+    'A': [-1,0],
+    'D': [1,0]
+};
