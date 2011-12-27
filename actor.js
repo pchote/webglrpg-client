@@ -30,6 +30,16 @@ var Direction = {
             case Direction.Down: return Direction.Up;
         }
         return Direction.None;
+    },
+
+    actorSequence: function(dir) {
+        switch (dir) {
+            case Direction.Right: return "right";
+            case Direction.Up: return "up";
+            case Direction.Left: return "left";
+            case Direction.Down: return "down";
+        }
+        return "down";
     }
 };
 var ActorLoader = {
@@ -126,15 +136,9 @@ var Actor = new Class({
     },
 
     getTexCoords: function(i) {
-        var facingFrameMap = {};
-        facingFrameMap[Direction.Left] = "left";
-        facingFrameMap[Direction.Right] = "right";
-        facingFrameMap[Direction.Up] = "up";
-        facingFrameMap[Direction.Down] = "down";
-
+        var t = this.frames[Direction.actorSequence(this.facing)][this.animFrame % 4];
         var ss = this.sheetSize;
         var ts = this.tileSize;
-        var t = this.frames[facingFrameMap[this.facing]][this.animFrame % 4];
         var bl = [(t[0] + ts[0])/ss[0], t[1]/ss[1]];
         var tr = [t[0]/ss[0], (t[1] + ts[1])/ss[1]];
         var v = [bl, [tr[0], bl[1]], tr, [bl[0], tr[1]]];
