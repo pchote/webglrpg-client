@@ -82,7 +82,7 @@ var Tileset = new Class({
         var s = [this.tileSize/this.sheetSize[0], this.tileSize/this.sheetSize[1]];
         return this.tileGeometry[id].t.map(function(poly) {
             return poly.map(function(v) {
-                return [(v[0] + o[0])*s[0], 1 - (v[1] + o[1])*s[1]];
+                return [(v[0] + o[0])*s[0], (v[1] + o[1])*s[1]];
             });
         }).flatten();
     }

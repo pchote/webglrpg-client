@@ -6,32 +6,32 @@
 def = {
     // Character art from http://opengameart.org/content/twelve-16x18-rpg-character-sprites-including-npcs-and-elementals
     src: "elementals.gif",
-    srcSize: {w:64, h:128},
-    size: {w:16, h:18},
+    sheetSize: [64,128],
+    tileSize: [16,18],
     frames: {
         "up" : [
-            {u: 0, v: 0},
-            {u: 16, v: 0},
-            {u: 32, v: 0},
-            {u: 48, v: 0}
+            [0,0],
+            [16,0],
+            [32,0],
+            [48,0]
         ],
         "right" : [
-            {u: 0, v: 18},
-            {u: 16, v: 18},
-            {u: 32, v: 18},
-            {u: 16, v: 18}
+            [0,18],
+            [16,18],
+            [32,18],
+            [16,18]
         ],
         "down" : [
-            {u: 0, v: 36},
-            {u: 16, v: 36},
-            {u: 32, v: 36},
-            {u: 16, v: 36}
+            [0,36],
+            [16,36],
+            [32,36],
+            [16,36]
         ],
         "left" : [
-            {u: 48, v: 0},
-            {u: 48, v: 18},
-            {u: 48, v: 36},
-            {u: 48, v: 18}
+            [48,0],
+            [48,18],
+            [48,36],
+            [48,18]
         ]
     },
     drawOffset: vec3.create([0, 0, 0]),

@@ -87,10 +87,6 @@ var ActorLoader = {
 
 var Actor = new Class({
     templateLoaded: false,
-    src: null,
-    srcSize: {w:0, h:0},
-    size: {w:0, h:0},
-    frames: {},    
     drawOffset: vec3.create(),
     hotspotOffset: vec3.create(),
     animFrame: 0,
@@ -99,6 +95,11 @@ var Actor = new Class({
     facing: Direction.Right,
 
     whenLoaded: function(data) {
+        if (!this.src || !this.sheetSize || !this.tileSize || !this.frames) {
+            console.error("Invalid actor definition");
+            return;
+        }
+
         if (data) {
             if (data.id)
                 this.id = data.id;
@@ -111,14 +112,13 @@ var Actor = new Class({
         }
 
         this.texture = renderer.createTexture(this.src);
-        var vv = function(i,j) { return [i, 0, j] };
-        var dh = 1;//1/Math.cos(degToRad(renderer.cameraAngle));
-        var v = [vv(0,0), vv(this.size.w/16, 0), vv(this.size.w/16, this.size.h*dh/16), vv(0, this.size.h*dh/16)];
+        var s = map.tileset.tileSize;
+        var ts = [this.tileSize[0]/s, this.tileSize[1]/s];
+        var v = [[0,0,0], [ts[0], 0, 0], [ts[0], 0, ts[1]], [0, 0, ts[1]]];
+        var poly = [[v[2], v[3], v[0]], [v[2], v[0], v[1]]].flatten();
+        this.vertexPosBuf = renderer.createBuffer(poly, gl.STATIC_DRAW, 3);
 
-        var vertices = [[v[2], v[3], v[0]], [v[2], v[0], v[1]]].flatten();
         var vertexTexCoords = this.getTexCoords();
-
-        this.vertexPosBuf = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
         this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, gl.DYNAMIC_DRAW, 2);
         this.loaded = true;
         if(map.loadedGeometry)
@@ -131,13 +131,15 @@ var Actor = new Class({
         facingFrameMap[Direction.Right] = "right";
         facingFrameMap[Direction.Up] = "up";
         facingFrameMap[Direction.Down] = "down";
-        var t = this.frames[facingFrameMap[this.facing]][this.animFrame % 4];
-        var u1 = t.u*1.0/this.srcSize.w;
-        var u0 = (t.u+this.size.w)*1.0/this.srcSize.w;
-        var v0 = 1.0 - t.v*1.0/this.srcSize.h;
-        var v1 = 1.0 - (t.v+this.size.h)*1.0/this.srcSize.h;
 
-        return [u0,v0,u1,v0,u1,v1,u0,v0,u1,v1,u0,v1];
+        var ss = this.sheetSize;
+        var ts = this.tileSize;
+        var t = this.frames[facingFrameMap[this.facing]][this.animFrame % 4];
+        var bl = [(t[0] + ts[0])/ss[0], t[1]/ss[1]];
+        var tr = [t[0]/ss[0], (t[1] + ts[1])/ss[1]];
+        var v = [bl, [tr[0], bl[1]], tr, [bl[0], tr[1]]];
+        var poly = [[v[0], v[1], v[2]], [v[0], v[2], v[3]]];
+        return poly.flatten();
     },
 
     draw: function() {
