@@ -79,11 +79,10 @@ var Tileset = new Class({
 
     getTileTexCoords: function(id, texId) {
         var o = this.tiles[texId];
-        var ss = this.sheetSize;
-        var ts = this.tileSize;
+        var s = [this.tileSize/this.sheetSize[0], this.tileSize/this.sheetSize[1]];
         return this.tileGeometry[id].t.map(function(poly) {
             return poly.map(function(v) {
-                return [(v[0]*ts + o[0])/ss[0], 1 - (v[1]*ts + o[1])/ss[1]];
+                return [(v[0] + o[0])*s[0], 1 - (v[1] + o[1])*s[1]];
             });
         }).flatten();
     }
