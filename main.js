@@ -65,7 +65,7 @@ function start() {
     document.onkeydown = Keyboard.onKeyDown;
     document.onkeyup = Keyboard.onKeyUp;
 
-    map = new Map("test");
+    map = new Map("sewer");
     map.runAfterTick(updateLoadScreen);
     tick();
 }

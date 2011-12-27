@@ -52,6 +52,9 @@ var Tileset = new Class({
         this.loaded = true;
         this.loadActions.each(function(a) { a() });
         this.loadActions.length = 0;
+
+        if (this.bgColor)
+    	    gl.clearColor(this.bgColor[0]/255, this.bgColor[1]/255, this.bgColor[2]/255, 1.0);
     },
 
     // Add an action to run after the tileset has loaded
