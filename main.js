@@ -9,16 +9,18 @@ var renderer;
 var lastTime = 0;
 function tick() {
     requestAnimFrame(tick);
+
+    var startTime = new Date().getTime();
+    if (lastTime != 0) {
+        var elapsed = startTime - lastTime;
+        map.tick(elapsed);
+    }
     renderer.drawScene(function() {
         map.draw();
     });
 
-    var timeNow = new Date().getTime();
-    if (lastTime != 0) {
-        var elapsed = timeNow - lastTime;
-        map.tick(elapsed);
-    }
-    lastTime = timeNow;
+    lastTime = startTime;
+    FrameCounter.tick(new Date().getTime() - startTime);
 }
 
 function showError(msg) {
@@ -56,6 +58,8 @@ function updateLoadScreen() {
 }
 
 function start() {
+    FrameCounter.init();
+
     renderer = new Renderer("glcanvas");
     if (!renderer.initializedWebGl) {
         console.error("Renderer init failed - exiting");
@@ -68,6 +72,26 @@ function start() {
     map = new Map("sewer");
     map.runAfterTick(updateLoadScreen);
     tick();
+}
+
+var FrameCounter = {
+    frames: 0,
+    init: function() {
+        FrameCounter.fpsDisplay = document.getElementById("fpscounter");
+        FrameCounter.frameDisplay = document.getElementById("frametimer");
+        FrameCounter.update();
+    },
+
+    tick: function(frameTime) {
+        FrameCounter.frames++;
+        FrameCounter.frameDisplay.set('html', frameTime);
+    },
+
+    update: function() {
+        window.setTimeout(FrameCounter.update, 1000);
+        FrameCounter.fpsDisplay.set('html', FrameCounter.frames);
+        FrameCounter.frames = 0;
+    }
 }
 
 var Keyboard = {
