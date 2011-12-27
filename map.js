@@ -104,7 +104,7 @@ var Map = new Class({
 
     drawRow: function(row) {
         renderer.bindBuffer(this.vertexPosBuf[row], shaderProgram.vertexPositionAttribute);
-        renderer.bindBuffer(this.vertexTexBuf[row], shaderProgram.vertexColorAttribute);
+        renderer.bindBuffer(this.vertexTexBuf[row], shaderProgram.textureCoordAttribute);
         renderer.bindTexture(this.tileset.texture);
 
         shaderProgram.setMatrixUniforms();

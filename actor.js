@@ -151,7 +151,7 @@ var Actor = new Class({
         mat4.rotate(mvMatrix, degToRad(-renderer.cameraAngle), [1, 0, 0]);
         mat4.translate(mvMatrix, this.drawOffset);
         renderer.bindBuffer(this.vertexPosBuf, shaderProgram.vertexPositionAttribute);
-        renderer.bindBuffer(this.vertexTexBuf, shaderProgram.vertexColorAttribute);
+        renderer.bindBuffer(this.vertexTexBuf, shaderProgram.textureCoordAttribute);
         renderer.bindTexture(this.texture);
 
         shaderProgram.setMatrixUniforms();
