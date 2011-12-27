@@ -55,16 +55,19 @@ var Map = new Class({
         // Initialize map geometry
         var vertices = [];
         var vertexTexCoords = [];
-
-        var tt = this.data.tileType;
-        var th = this.data.tileHeight;
-        var tx = this.data.tileTexture;
+        var t = this.data.tiles;
         for (var j = 0, k = 0; j < this.data.height; j++) {
             for (var i = 0; i < this.data.width; i++, k++) {
-                vertices = vertices.concat(this.tileset.getTileVertices(tt[k], vec3.create([i,j,th[k]])));
-                vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileTexCoords(tt[k], tx[k]));
+                var tt = this.data.tiles[k];
+                    console.log(tt);
+                var n = tt.length / 3;
+                for (var l = 0; l < n; l++) {
+                    vertices = vertices.concat(this.tileset.getTileVertices(tt[3*l], vec3.create([i,j,tt[3*l+2]])));
+                    vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileTexCoords(tt[3*l], tt[3*l+1]));
+                }
             }
         }
+
         this.vertexPosBuf = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
         this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
         this.loadedGeometry = true;
@@ -96,7 +99,7 @@ var Map = new Class({
         var i = Math.floor(x)
         var j = Math.floor(y);
 
-        return this.data.tileHeight[j*this.data.width + i];
+        return this.data.tiles[j*this.data.width + i][2];
     },
 
     draw: function() {
@@ -136,6 +139,6 @@ var Map = new Class({
     tileAt: function(x,y) {
         if (x < 0 || y < 0 || x >= this.data.width || y >= this.data.height)
             return null;
-        return this.data.tileType[y*this.data.width + x];
+        return this.data.tiles[y*this.data.width + x][0];
     }
 });
