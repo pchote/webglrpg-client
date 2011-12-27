@@ -42,5 +42,10 @@ def = {
 
     init: function() {
         this.addActivity(new Activities.InputWatcher());
+    },
+
+    tick: function() {
+        if (this.bindCamera)
+            vec3.set(this.pos, renderer.cameraPosition);
     }
 };

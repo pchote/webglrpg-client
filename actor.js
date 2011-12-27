@@ -162,7 +162,10 @@ var Actor = new Class({
         this.activityQueue.length = 0;
     },
 
-    tick: function(dt) {
+    tickOuter: function(dt) {
+        if (this.tick)
+            this.tick(dt);
+
         // dt will be decremented by actions
         var args = {"dt": dt};
         if (!this.activityQueue.length)

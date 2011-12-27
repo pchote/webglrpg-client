@@ -123,7 +123,7 @@ var Map = new Class({
     // Activities should return a new action to run in the next tick, or null
     afterTick: [],
     tick: function(dt) {
-        this.actorList.each(function(a) { if (a.tick) a.tick(dt); });
+        this.actorList.each(function(a) { a.tickOuter(dt); });
 
         if (this.afterTick.length)
             this.afterTick = this.afterTick.map(function(a) { return a(); }).clean();
