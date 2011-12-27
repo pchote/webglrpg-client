@@ -3,22 +3,33 @@
 // GNU General Public License, as published by the Free Software Foundation.
 // See LICENSE.html for the license terms.
 
-var Facings = {
+var Direction = {
     None: 0,
     Right: 1,
     Up: 2,
     Left: 4,
     Down: 8,
+
     fromDelta: function(dp) {
         if (dp[0] > 0)
-            return Facings.Right;
+            return Direction.Right;
         if (dp[0] < 0)
-            return Facings.Left;
+            return Direction.Left;
         if (dp[1] > 0)
-            return Facings.Up;
+            return Direction.Up;
         if (dp[1] < 0)
-            return Facings.Down;
+            return Direction.Down;
         return 0;
+    },
+
+    reverse: function(dir) {
+        switch (dir) {
+            case Direction.Right: return Direction.Left;
+            case Direction.Up: return Direction.Down;
+            case Direction.Left: return Direction.Right;
+            case Direction.Down: return Direction.Up;
+        }
+        return Direction.None;
     }
 };
 var ActorLoader = {
@@ -85,7 +96,7 @@ var Actor = new Class({
     animFrame: 0,
 
     pos: vec3.create(),
-    facing: Facings.Right,
+    facing: Direction.Right,
 
     whenLoaded: function(data) {
         if (data) {
@@ -101,7 +112,8 @@ var Actor = new Class({
 
         this.texture = renderer.createTexture(this.src);
         var vv = function(i,j) { return [i, 0, j] };
-        var v = [vv(0,0), vv(this.size.w/16, 0), vv(this.size.w/16, this.size.h/16), vv(0, this.size.h/16)];
+        var dh = 1;//1/Math.cos(degToRad(renderer.cameraAngle));
+        var v = [vv(0,0), vv(this.size.w/16, 0), vv(this.size.w/16, this.size.h*dh/16), vv(0, this.size.h*dh/16)];
 
         var vertices = [[v[2], v[3], v[0]], [v[2], v[0], v[1]]].flatten();
         var vertexTexCoords = this.getTexCoords();
@@ -115,10 +127,10 @@ var Actor = new Class({
 
     getTexCoords: function(i) {
         var facingFrameMap = {};
-        facingFrameMap[Facings.Left] = "left";
-        facingFrameMap[Facings.Right] = "right";
-        facingFrameMap[Facings.Up] = "up";
-        facingFrameMap[Facings.Down] = "down";
+        facingFrameMap[Direction.Left] = "left";
+        facingFrameMap[Direction.Right] = "right";
+        facingFrameMap[Direction.Up] = "up";
+        facingFrameMap[Direction.Down] = "down";
         var t = this.frames[facingFrameMap[this.facing]][this.animFrame % 4];
         var u1 = t.u*1.0/this.srcSize.w;
         var u0 = (t.u+this.size.w)*1.0/this.srcSize.w;
@@ -195,7 +207,7 @@ Activities.Move = new Class({
     initialize: function(from, to, length) {
         this.from = vec3.create(from);
         this.to = vec3.create(to);
-        this.facing = Facings.fromDelta([Math.round(to[0] - from[0]), Math.round(to[1] - from[1])]);
+        this.facing = Direction.fromDelta([Math.round(to[0] - from[0]), Math.round(to[1] - from[1])]);
         this.length = length;
     },
 
@@ -227,7 +239,13 @@ Activities.Move = new Class({
         var hy = a.pos[1]+a.hotspotOffset[1];
         a.pos[2] = map.getHeight(hx, hy);
 
-        return (this.accumTime < this.length) ? [this] : [];
+        if (this.accumTime >= this.length) {
+            a.pos[0] = Math.round(a.pos[0]);
+            a.pos[1] = Math.round(a.pos[1]);
+            return [];
+        }
+
+        return [this];
     }
 });
 
@@ -258,8 +276,12 @@ Activities.InputWatcher = new Class({
         var from = vec3.create(a.pos);
         var dp = Activities.InputWatcher.DirectionOffsets[dirKey];
         var to = vec3.create([Math.round(from[0] + dp[0]), Math.round(from[1] + dp[1]), 0]);
-        var facing = Facings.fromDelta(dp);
-        if (!map.canEnterTile(to[0], to[1], facing)) {
+        var facing = Direction.fromDelta(dp);
+
+        var exitTile = map.tileAt(a.pos[0], a.pos[1]);
+        var entryTile = map.tileAt(to[0], to[1]);
+        if (entryTile == null || !map.tileset.isWalkable(exitTile, facing) ||
+            !map.tileset.isWalkable(entryTile, Direction.reverse(facing))) {
             args.dt = 0;
             return [new Activities.Face(facing), this];
         }

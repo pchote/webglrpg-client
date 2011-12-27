@@ -133,9 +133,9 @@ var Map = new Class({
         this.afterTick.push(a);
     },
 
-    canEnterTile: function(x, y, direction) {
+    tileAt: function(x,y) {
         if (x < 0 || y < 0 || x >= this.data.width || y >= this.data.height)
-            return false;
-        return this.tileset.isWalkable(this.data.tileType[y*this.data.width + x], direction);
+            return null;
+        return this.data.tileType[y*this.data.width + x];
     }
 });
