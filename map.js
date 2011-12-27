@@ -55,17 +55,25 @@ var Map = new Class({
         // Initialize map geometry
         this.vertexPosBuf = [];
         this.vertexTexBuf = [];
+        this.walkability = [];
         var t = this.data.tiles;
         for (var j = 0, k = 0; j < this.data.height; j++) {
             var vertices = [];
             var vertexTexCoords = [];
             for (var i = 0; i < this.data.width; i++, k++) {
                 var tt = this.data.tiles[k];
-                var n = tt.length / 3;
+                var n = Math.floor(tt.length / 3);
+                this.walkability[k] = Direction.All;
+
                 for (var l = 0; l < n; l++) {
+                    this.walkability[k] &= this.tileset.getWalkability(tt[3*l]);
                     vertices = vertices.concat(this.tileset.getTileVertices(tt[3*l], vec3.create([i,j,tt[3*l+2]])));
                     vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileTexCoords(tt[3*l], tt[3*l+1]));
                 }
+
+                // Custom walkability
+                if (tt.length == 3*n+1)
+                    this.walkability[k] = tt[3*n];
             }
             this.vertexPosBuf[j] = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
             this.vertexTexBuf[j] = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
@@ -145,9 +153,11 @@ var Map = new Class({
         this.afterTick.push(a);
     },
 
-    tileAt: function(x,y) {
+    isWalkable: function(x, y, direction) {
         if (x < 0 || y < 0 || x >= this.data.width || y >= this.data.height)
             return null;
-        return this.data.tiles[y*this.data.width + x][0];
+        var k = y*this.data.width + x;
+        console.log(x,y,this.walkability[k], direction, (this.walkability[k] & direction) != 0);
+        return (this.walkability[k] & direction) != 0;
     }
 });

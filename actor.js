@@ -9,6 +9,7 @@ var Direction = {
     Up: 2,
     Left: 4,
     Down: 8,
+    All: 15,
 
     fromDelta: function(dp) {
         if (dp[0] > 0)
@@ -283,10 +284,8 @@ Activities.InputWatcher = new Class({
         var to = vec3.create([Math.round(from[0] + dp[0]), Math.round(from[1] + dp[1]), 0]);
         var facing = Direction.fromDelta(dp);
 
-        var exitTile = map.tileAt(a.pos[0], a.pos[1]);
-        var entryTile = map.tileAt(to[0], to[1]);
-        if (entryTile == null || !map.tileset.isWalkable(exitTile, facing) ||
-            !map.tileset.isWalkable(entryTile, Direction.reverse(facing))) {
+        if (!map.isWalkable(a.pos[0], a.pos[1], facing) ||
+            !map.isWalkable(to[0], to[1], Direction.reverse(facing))) {
             args.dt = 0;
             return [new Activities.Face(facing), this];
         }

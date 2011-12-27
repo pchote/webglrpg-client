@@ -73,8 +73,8 @@ var Tileset = new Class({
         }).flatten();
     },
 
-    isWalkable: function(tileId, direction) {
-        return this.tileGeometry[tileId].w & direction;
+    getWalkability: function(tileId) {
+        return this.tileGeometry[tileId].d;
     },
 
     getTileTexCoords: function(id, texId) {
