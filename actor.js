@@ -145,7 +145,6 @@ var Actor = new Class({
             return;
 
         mvPushMatrix();
-        renderer.setCamera();
         mat4.translate(mvMatrix, this.pos);
 
         // Undo rotation so that character plane is normal to LOS

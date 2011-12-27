@@ -53,23 +53,23 @@ var Map = new Class({
         var self = this;
 
         // Initialize map geometry
-        var vertices = [];
-        var vertexTexCoords = [];
+        this.vertexPosBuf = [];
+        this.vertexTexBuf = [];
         var t = this.data.tiles;
         for (var j = 0, k = 0; j < this.data.height; j++) {
+            var vertices = [];
+            var vertexTexCoords = [];
             for (var i = 0; i < this.data.width; i++, k++) {
                 var tt = this.data.tiles[k];
-                    console.log(tt);
                 var n = tt.length / 3;
                 for (var l = 0; l < n; l++) {
                     vertices = vertices.concat(this.tileset.getTileVertices(tt[3*l], vec3.create([i,j,tt[3*l+2]])));
                     vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileTexCoords(tt[3*l], tt[3*l+1]));
                 }
             }
+            this.vertexPosBuf[j] = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
+            this.vertexTexBuf[j] = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
         }
-
-        this.vertexPosBuf = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
-        this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
         this.loadedGeometry = true;
 
         // Initialize actors
@@ -102,24 +102,33 @@ var Map = new Class({
         return this.data.tiles[j*this.data.width + i][2];
     },
 
+    drawRow: function(row) {
+        renderer.bindBuffer(this.vertexPosBuf[row], shaderProgram.vertexPositionAttribute);
+        renderer.bindBuffer(this.vertexTexBuf[row], shaderProgram.vertexColorAttribute);
+        renderer.bindTexture(this.tileset.texture);
+
+        shaderProgram.setMatrixUniforms();
+        gl.drawArrays(gl.TRIANGLES, 0, this.vertexPosBuf[row].numItems);
+    },
+
     draw: function() {
         if (!this.loadedGeometry || !this.loadedActors)
             return;
 
+        this.actorList.sort(function(a,b) { return b.pos[1] - a.pos[1]; })
         mvPushMatrix();
         renderer.setCamera();
-        renderer.bindBuffer(this.vertexPosBuf, shaderProgram.vertexPositionAttribute);
-        renderer.bindBuffer(this.vertexTexBuf, shaderProgram.vertexColorAttribute);
-        renderer.bindTexture(this.tileset.texture);
 
-        shaderProgram.setMatrixUniforms();
-        gl.drawArrays(gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
+        var k = 0, maxK = this.actorList.length;
+        for (var j = this.data.height - 1; j >= 0; j--) {
+            gl.clear(gl.DEPTH_BUFFER_BIT);
+            this.drawRow(j);
+
+            for (; k < maxK && this.actorList[k].pos[1] >= j; k++)
+                this.actorList[k].draw();
+        }
 
         mvPopMatrix();
-
-        // Sort actors by draw order and render
-        this.actorList.sort(function(a,b) { return b.pos[1] - a.pos[1]; })
-        this.actorList.each(function(a) { a.draw(); });
     },
 
     // Activities to run after the map ticks
