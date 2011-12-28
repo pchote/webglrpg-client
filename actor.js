@@ -73,8 +73,8 @@ var ActorLoader = {
                         if (e.lineNumber)
                             lineNumber = e.lineNumber - new Error().lineNumber + 6;
 
-                        console.log("Error loading "+file+":"+lineNumber);
-                        console.log(e.message);
+                        console.error("Error loading "+file+":"+lineNumber);
+                        console.error(e.message);
                     }
                     self.actorTypes[type].implement(def);
                     self.actorTypes[type].implement({ templateLoaded: true });
