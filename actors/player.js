@@ -34,7 +34,7 @@ def = {
             [24,96]
         ]
     },
-    drawOffset: vec3.create([-0.25, 0, 0]),
+    drawOffset: vec3.create([-0.25, 0, 0.125]),
     hotspotOffset: vec3.create([0.5, 0.5, 0]),
 
     // Should the camera follow the player?
