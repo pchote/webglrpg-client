@@ -133,22 +133,31 @@ var Actor = new Class({
                 this.facing = instanceData.facing;
         }
 
-        this.texture = renderer.createTexture(this.src);
+        var self = this;
+        this.texture = renderer.createTexture(this.src)
+        this.texture.runWhenLoaded(function() { self.onMapOrTextureLoaded() });
         this.vertexTexBuf = renderer.createBuffer(this.getTexCoords(), gl.DYNAMIC_DRAW, 2);
 
-        var self = this;
         map.runWhenLoaded(function() {
             var s = map.tileset.tileSize;
             var ts = [self.tileSize[0]/s, self.tileSize[1]/s];
             var v = [[0,0,0], [ts[0], 0, 0], [ts[0], 0, ts[1]], [0, 0, ts[1]]];
             var poly = [[v[2], v[3], v[0]], [v[2], v[0], v[1]]].flatten();
             self.vertexPosBuf = renderer.createBuffer(poly, gl.STATIC_DRAW, 3);
-
-            self.init();
-            self.loaded = true;
-            self.onLoadActions.each(function(a) { a(); });
-            self.onLoadActions.length = 0;
+            self.onMapOrTextureLoaded();
         });
+    },
+
+    onMapOrTextureLoaded: function() {
+        if (!map.loaded || !this.texture.loaded)
+            return;
+
+        this.init(); // Hook for actor implementations
+        this.loaded = true;
+        console.log("Initialized actor", this.id);
+
+        this.onLoadActions.each(function(a) { a(); });
+        this.onLoadActions.length = 0;
     },
 
     getTexCoords: function(i) {
@@ -218,7 +227,7 @@ var Actor = new Class({
         }
     },
 
-    // Called when the actor and map are fully loaded
+    // Hook for actor implementations
     init: function() {}
 });
 

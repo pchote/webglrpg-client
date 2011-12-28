@@ -31,10 +31,10 @@ var Map = new Class({
 
     // Request the map data
     initialize: function(name) {
-        var file = "maps/"+name+".map";
+        this.file = "maps/"+name+".map";
         var self = this;
         new Request.JSON({
-            url: file,
+            url: this.file,
             method: 'get',
             link: 'chain',
             secure: true,
@@ -89,7 +89,7 @@ var Map = new Class({
             this.vertexTexBuf[j] = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
         }
         this.loaded = true;
-        console.log("Loaded tileset definition", this.src);
+        console.log("Initialized map", this.file);
 
         this.onLoadActions.each(function(a) { a(); });
         this.onLoadActions.length = 0;

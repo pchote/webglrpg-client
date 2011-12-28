@@ -15,13 +15,13 @@ var TilesetLoader = {
             return ts;
 
         this.tilesets[name] = ts = new Tileset();
-        var file = "tilesets/"+name+".ts";
+        this.tilesets[name].file = "tilesets/"+name+".ts";
         new Request.JSON({
-            url: file,
+            url: this.tilesets[name].file,
             method: 'get',
             link: 'chain',
             secure: true,
-            onSuccess: function(json) { ts.dataRecieved(json) },
+            onSuccess: function(json) { ts.onJsonLoaded(json) },
             onFailure: function() { console.error("Error fetching map "+file)},
             onError: function(text, error) {
                 console.error("Error parsing map file "+file+": "+error );
@@ -50,19 +50,24 @@ var Tileset = new Class({
     },
 
     // Received tileset definition JSON
-    dataRecieved: function(data) {
+    onJsonLoaded: function(data) {
         // Merge tileset definition into this object
         Object.merge(this, data);
-        this.texture = renderer.createTexture(this.src);
 
-        // Run whenReady actions
-        this.loaded = true;
-        this.onLoadActions.each(function(a) { a() });
-        this.onLoadActions.length = 0;
-        console.log("Loaded tileset definition", this.src);
+        this.texture = renderer.createTexture(this.src);
+        var self = this;
+        this.texture.runWhenLoaded(function() { self.onTextureLoaded() });
 
         if (this.bgColor)
     	    gl.clearColor(this.bgColor[0]/255, this.bgColor[1]/255, this.bgColor[2]/255, 1.0);
+    },
+
+    onTextureLoaded: function() {
+        this.loaded = true;
+        console.log("Initialized tileset", this.file);
+
+        this.onLoadActions.each(function(a) { a() });
+        this.onLoadActions.length = 0;
     },
 
     getTileVertices: function(id, offset) {

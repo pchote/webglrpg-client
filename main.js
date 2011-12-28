@@ -30,35 +30,11 @@ function showError(msg) {
     $('errormessage').set('html', msg);
 };
 
-var mapLoaded = false;
-var actorsLoaded = false;
-var texturesLoaded = false;
-function updateLoadScreen() {
-    if (!mapLoaded && map.loaded) {
-        mapLoaded = true;
-        $('map-done').appendText('Done');
-    }
-
-    if (!actorsLoaded && map.actorList.every(function(a) { return a.templateLoaded })) {
-        actorsLoaded = true;
-        $('actors-done').appendText('Done');
-    }
-
-    if (!texturesLoaded && !Object.filter(renderer.textures, function(k) { return k.loaded }).length) {
-        texturesLoaded = true;
-        $('art-done').appendText('Done');
-    }
-
-    if (mapLoaded && actorsLoaded && texturesLoaded) {
-        $('loadscreen').setStyle('display', 'none');
-        $('glcanvas').setStyle('display', 'block');
-        return null;
-    }
-    return updateLoadScreen;
-}
-
 function start() {
+    LoadScreen.init();
     FrameCounter.init();
+    document.onkeydown = Keyboard.onKeyDown;
+    document.onkeyup = Keyboard.onKeyUp;
 
     renderer = new Renderer("glcanvas");
     if (!renderer.initializedWebGl) {
@@ -66,12 +42,25 @@ function start() {
         return;
     }
 
-    document.onkeydown = Keyboard.onKeyDown;
-    document.onkeyup = Keyboard.onKeyUp;
-
     map = new Map("sewer");
-    map.runAfterTick(updateLoadScreen);
+    map.runWhenLoaded(LoadScreen.checkActors);
     tick();
+}
+
+var LoadScreen = {
+    init: function() {
+        $('loadscreen').setStyle('display', 'block');
+        $('glcanvas').setStyle('display', 'none');
+    },
+
+    // TODO: Do this asynchronously
+    checkActors: function() {
+        if (map.actorList.every(function(a) { return a.templateLoaded })) {
+            $('loadscreen').setStyle('display', 'none');
+            $('glcanvas').setStyle('display', 'block');
+        } else
+            map.runAfterTick(LoadScreen.checkActors);
+    }
 }
 
 var FrameCounter = {

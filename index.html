@@ -17,9 +17,10 @@
 			p { color: #000;}
 			a { color: #900 }
 			#loadscreen, #errorscreen { width:640px; height:480px; background:#000 }
-			#loadscreen h1, #errorscreen h1 { position:relative; text-align: center; top:160px }
+			#loadscreen h1, #errorscreen h1 { position:relative; text-align: center; top:200px }
 			#errorscreen { display: none }
 			#errorscreen h1 { color: #900 }
+			#loadscreen { display: none }
 			#loadscreen p {	position:relative; left: 245px; width: 150px; top: 160px; margin: 0 10px 10px 0;}
 			#errorscreen p { position:relative;	text-align: center;	top: 160px;	margin: 0 10px 10px 0; }
 			#loadscreen p span { float:right; color: #090; }
@@ -27,16 +28,13 @@
 	</head>
 	<body onload="start()">
 		<div id="loadscreen">
-			<h1 id="text">Loading Initial Assets</h1>
-			<p>Map... <span id="map-done"></span></p>
-			<p>Actors... <span id="actors-done"></span></p>
-			<p>Art... <span id="art-done"></span></p>
+			<h1 id="text">Loading...</h1>
 		</div>
 		<div id="errorscreen">
 			<h1>Fatal Error</h1>
 			<p id="errormessage">Something went wrong...</p>
 		</div>
-		<canvas id="glcanvas" style="display: none" width="640" height="480"></canvas>
+		<canvas id="glcanvas" width="640" height="480"></canvas>
 		<p>Controls: Use WASD to move</p>
 		<p>FPS: <span id="fpscounter"></span> :: Frame Time: <span id="frametimer"></span> ms</p>
 	</body>

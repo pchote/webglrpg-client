@@ -137,8 +137,9 @@ var Renderer = new Class({
     },
 
     createTexture: function(src) {
-        if (this.textures[src])
+        if (this.textures[src]) {
             return this.textures[src];
+        }
 
         var t = gl.createTexture();
         t.image = new Image();
@@ -150,8 +151,20 @@ var Renderer = new Class({
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             gl.bindTexture(gl.TEXTURE_2D, null);
+
             t.loaded = true;
+            t.onLoadActions.each(function(a) { a(); });
+            t.onLoadActions.length = 0;
         };
+
+        t.onLoadActions = [];
+        t.runWhenLoaded = function(a) {
+            if (t.loaded)
+                a();
+            else
+                t.onLoadActions.push(a);
+        }
+
         t.image.src = src;
         this.textures[src] = t;
         return t;
