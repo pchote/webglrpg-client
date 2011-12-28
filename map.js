@@ -3,8 +3,42 @@
 // GNU General Public License, as published by the Free Software Foundation.
 // See LICENSE.html for the license terms.
 
-var Map = new Class({
-    // Map Data
+var Map = {
+    zoneDict: {},
+    zoneList: [],
+
+    // Sort zones for correct render order
+    sortZones: function() {
+        this.zoneList.sort(function(a,b) { return b.bounds[1] - a.bounds[1]; });
+    },
+
+    addZone: function(zoneId) {
+        var z = new Zone(zoneId);
+        this.zoneDict[zoneId] = z;
+        this.zoneList.push(z);
+
+        // Insert into render order
+        z.runWhenLoaded(function() { Map.sortZones(); });
+    },
+
+    removeZone: function(zoneId) {
+        this.actorList.erase(this.zoneDict[zoneId]);
+        delete this.zoneDict[zoneId];
+    },
+
+    tick: function(dt) {
+        for (var z in this.zoneDict)
+            this.zoneDict[z].tick(dt);
+    },
+
+    draw: function(dt) {
+        for (var z in this.zoneDict)
+            this.zoneDict[z].draw();
+    }
+}
+
+var Zone = new Class({
+    // Zone Data
     data: {},
 
     // Actors stored by key for easy lookup
@@ -13,43 +47,38 @@ var Map = new Class({
     // Actors stored as an array for easy sorting and enumeration
     actorList: [],
 
-    // Actions to run after the map ticks
-    // Won't run until the map has loaded
-    afterTick: [],
-    runAfterTick: function(a) {
-        this.afterTick.push(a);
-    },
-
     // Actions to run when the map has loaded
     onLoadActions: [],
     runWhenLoaded: function(a) {
-        if (this.loaded)
-            a();
-        else
-            this.onLoadActions.push(a);
+        if (this.loaded) a();
+        else this.onLoadActions.push(a);
     },
 
-    // Request the map data
-    initialize: function(name) {
-        this.file = "maps/"+name+".map";
+    // Zone ctor
+    initialize: function(zoneId) {
+        // TODO: Check LocalStorage / IndexDB for cached data
+        // Pull zone data from server
+        this.id = zoneId;
         var self = this;
         new Request.JSON({
-            url: this.file,
+            url: "maps/"+zoneId+".map",
             method: 'get',
             link: 'chain',
             secure: true,
-            onSuccess: function(json) { self.onDataRecieved(json) },
-            onFailure: function() { console.error("Error fetching map "+file)},
+            onSuccess: function(json) { self.onJsonLoaded(json) },
+            onFailure: function() { console.error("Error fetching zone "+zoneId)},
             onError: function(text, error) {
-                console.error("Error parsing map file "+file+": "+error );
+                console.error("Error parsing zone "+zoneId+": "+error );
                 console.error(text);
             },
         }).send();
     },
 
-    // Recieved map definition JSON
-    onDataRecieved: function(data) {
-        this.data = data;
+    // Recieved zone definition JSON
+    onJsonLoaded: function(data) {
+        this.bounds = data.bounds;
+        this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
+        this.cells = data.cells;
         var self = this;
 
         // Load tileset if necessary, then create level geometry
@@ -60,62 +89,64 @@ var Map = new Class({
         data.actors.each(function(a) { self.addActor(a) });
     },
 
-    // Parse map data and create level
     onTilesetLoaded: function() {
-        // Initialize map geometry
+        // Initialize zone geometry
         this.vertexPosBuf = [];
         this.vertexTexBuf = [];
         this.walkability = [];
-        var t = this.data.tiles;
-        for (var j = 0, k = 0; j < this.data.height; j++) {
+
+        for (var j = 0, k = 0; j < this.size[1]; j++) {
             var vertices = [];
             var vertexTexCoords = [];
-            for (var i = 0; i < this.data.width; i++, k++) {
-                var tt = this.data.tiles[k];
-                var n = Math.floor(tt.length / 3);
+            for (var i = 0; i < this.size[0]; i++, k++) {
+                var cell = this.cells[k];
                 this.walkability[k] = Direction.All;
 
+                var n = Math.floor(cell.length / 3);
                 for (var l = 0; l < n; l++) {
-                    this.walkability[k] &= this.tileset.getWalkability(tt[3*l]);
-                    vertices = vertices.concat(this.tileset.getTileVertices(tt[3*l], vec3.create([i,j,tt[3*l+2]])));
-                    vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileTexCoords(tt[3*l], tt[3*l+1]));
+                    var tilePos = vec3.create([this.bounds[0] + i, this.bounds[1] + j, cell[3*l+2]]);
+                    this.walkability[k] &= this.tileset.getWalkability(cell[3*l]);
+                    vertices = vertices.concat(this.tileset.getTileVertices(cell[3*l], tilePos));
+                    vertexTexCoords = vertexTexCoords.concat(this.tileset.getTileTexCoords(cell[3*l], cell[3*l+1]));
                 }
 
                 // Custom walkability
-                if (tt.length == 3*n+1)
-                    this.walkability[k] = tt[3*n];
+                if (cell.length == 3*n+1)
+                    this.walkability[k] = cell[3*n];
             }
             this.vertexPosBuf[j] = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
             this.vertexTexBuf[j] = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
         }
+
         this.loaded = true;
-        console.log("Initialized map", this.file);
+        console.log("Initialized zone", this.id);
 
         this.onLoadActions.each(function(a) { a(); });
         this.onLoadActions.length = 0;
     },
 
-    // Instantiate and add an actor to the map
-    addActor: function (data) {
-        var a = ActorLoader.load(data.type, data);
-        this.actorDict[data.id] = a;
+    // Instantiate and add an actor to the zone
+    addActor: function (actorData) {
+        actorData.zone = this;
+        var a = ActorLoader.load(actorData);
+        this.actorDict[actorData.id] = a;
         this.actorList.push(a);
     },
 
-    // Remove an actor from the map
+    // Remove an actor from the zone
     removeActor: function (id) {
-        var a = this.actorDict[id];
-        this.actorList.erase(a);
+        this.actorList.erase(this.actorDict[id]);
         delete this.actorDict[id];
     },
 
-    // Calculate the height of a point in the map
+    // Calculate the height of a point in the zone
     getHeight: function(x, y) {
-        if (x < 0 || y < 0 || x >= this.data.width || y >= this.data.height) {
-            console.error("Requesting height for ["+x+","+y+"] outside of map bounds");
+        if (!this.isInZone(x, y)) {
+            console.error("Requesting height for ["+x+", "+y+"] outside zone bounds");
             return 0;
         }
-        var i = Math.floor(x)
+
+        var i = Math.floor(x);
         var j = Math.floor(y);
         var dp = [x - i, y - j];
 
@@ -136,10 +167,10 @@ var Map = new Class({
         }
 
         // Check if any of the tiles defines a custom walk polygon
-        var tiles = this.data.tiles[j*this.data.width + i];
-        var n = Math.floor(tiles.length/3);
+        var cell = this.cells[(j - this.bounds[1])*this.size[0] + i - this.bounds[0]];
+        var n = Math.floor(cell.length/3);
         for (var l = 0; l < n; l++) {
-            var poly = this.tileset.getTileWalkPoly(tiles[3*l]);
+            var poly = this.tileset.getTileWalkPoly(cell[3*l]);
             if (!poly)
                 continue;
 
@@ -148,12 +179,12 @@ var Map = new Class({
                 var uv = getUV(poly[p], dp);
                 var w = uv[0] + uv[1];
                 if (w <= 1)
-                    return tiles[3*l+2] + (1-w)*poly[p][0][2] + uv[0]*poly[p][1][2] + uv[1]*poly[p][2][2];
+                    return cell[3*l+2] + (1-w)*poly[p][0][2] + uv[0]*poly[p][1][2] + uv[1]*poly[p][2][2];
             }
         }
 
         // Use the height of the first tile in the cell
-        return tiles[2];
+        return cell[2];
     },
 
     drawRow: function(row) {
@@ -174,11 +205,11 @@ var Map = new Class({
         renderer.setCamera();
 
         var k = 0, maxK = this.actorList.length;
-        for (var j = this.data.height - 1; j >= 0; j--) {
+        for (var j = this.size[1] - 1; j >= 0; j--) {
             gl.clear(gl.DEPTH_BUFFER_BIT);
             this.drawRow(j);
 
-            for (; k < maxK && this.actorList[k].pos[1] >= j; k++)
+            for (; k < maxK && this.actorList[k].pos[1] >= j + this.bounds[1]; k++)
                 this.actorList[k].draw();
         }
 
@@ -190,16 +221,20 @@ var Map = new Class({
             return;
 
         this.actorList.each(function(a) { a.tickOuter(dt); });
-
-        if (this.afterTick.length)
-            this.afterTick = this.afterTick.map(function(a) { return a(); }).clean();
     },
 
+    isInZone: function(x, y) {
+        return x >= this.bounds[0] && y >= this.bounds[1] &&
+               x < this.bounds[2] && y < this.bounds[3]
+    },
 
     isWalkable: function(x, y, direction) {
-        if (x < 0 || y < 0 || x >= this.data.width || y >= this.data.height)
+        if (!this.isInZone(x,y))
             return null;
-        var k = y*this.data.width + x;
-        return (this.walkability[k] & direction) != 0;
+
+        var i = Math.floor();
+        var j = Math.floor(y - this.bounds[1]);
+
+        return (this.walkability[(y - this.bounds[1])*this.size[0] + x - this.bounds[0]] & direction) != 0;
     }
 });

@@ -50,7 +50,8 @@ var ActorLoader = {
     // Instances that require loading
     actorInstances: {},
 
-    load: function(type, data) {
+    load: function(actorData) {
+        var type = actorData.type;
         // Actor hasn't been loaded - create a skeleton class and return an instance
         // The class will be extended with real behavior after load, updating all instances
         if (typeof(this.actorTypes[type]) === 'undefined') {
@@ -92,7 +93,7 @@ var ActorLoader = {
         if (instance.templateLoaded)
             instance.onTemplateLoaded(data);
         else
-            this.actorInstances[type].push({'instance' : instance, 'data' : data});
+            this.actorInstances[type].push({'instance' : instance, 'data' : actorData});
 
         return instance;
     }
@@ -124,32 +125,31 @@ var Actor = new Class({
             return;
         }
 
-        if (instanceData) {
-            if (instanceData.id)
-                this.id = instanceData.id;
-            if (instanceData.pos)
-                vec3.set(instanceData.pos, this.pos);
-            if (instanceData.facing)
-                this.facing = instanceData.facing;
-        }
+        this.zone = instanceData.zone;
+        if (instanceData.id)
+            this.id = instanceData.id;
+        if (instanceData.pos)
+            vec3.set(instanceData.pos, this.pos);
+        if (instanceData.facing)
+            this.facing = instanceData.facing;
 
         var self = this;
         this.texture = renderer.createTexture(this.src)
-        this.texture.runWhenLoaded(function() { self.onMapOrTextureLoaded() });
+        this.texture.runWhenLoaded(function() { self.onZoneOrTextureLoaded() });
         this.vertexTexBuf = renderer.createBuffer(this.getTexCoords(), gl.DYNAMIC_DRAW, 2);
 
-        map.runWhenLoaded(function() {
-            var s = map.tileset.tileSize;
+        this.zone.runWhenLoaded(function() {
+            var s = self.zone.tileset.tileSize;
             var ts = [self.tileSize[0]/s, self.tileSize[1]/s];
             var v = [[0,0,0], [ts[0], 0, 0], [ts[0], 0, ts[1]], [0, 0, ts[1]]];
             var poly = [[v[2], v[3], v[0]], [v[2], v[0], v[1]]].flatten();
             self.vertexPosBuf = renderer.createBuffer(poly, gl.STATIC_DRAW, 3);
-            self.onMapOrTextureLoaded();
+            self.onZoneOrTextureLoaded();
         });
     },
 
-    onMapOrTextureLoaded: function() {
-        if (!map.loaded || !this.texture.loaded)
+    onZoneOrTextureLoaded: function() {
+        if (!this.zone.loaded || !this.texture.loaded)
             return;
 
         this.init(); // Hook for actor implementations
@@ -276,7 +276,7 @@ Activities.Move = new Class({
         // Calculate new height
         var hx = a.pos[0]+a.hotspotOffset[0];
         var hy = a.pos[1]+a.hotspotOffset[1];
-        a.pos[2] = map.getHeight(hx, hy);
+        a.pos[2] = a.zone.getHeight(hx, hy);
 
         return (this.accumTime < this.length) ? [this] : [];
     }
@@ -311,8 +311,8 @@ Activities.InputWatcher = new Class({
         var to = vec3.create([Math.round(from[0] + dp[0]), Math.round(from[1] + dp[1]), 0]);
         var facing = Direction.fromDelta(dp);
 
-        if (!map.isWalkable(a.pos[0], a.pos[1], facing) ||
-            !map.isWalkable(to[0], to[1], Direction.reverse(facing))) {
+        if (!a.zone.isWalkable(a.pos[0], a.pos[1], facing) ||
+            !a.zone.isWalkable(to[0], to[1], Direction.reverse(facing))) {
             args.dt = 0;
             return [new Activities.Face(facing), this];
         }

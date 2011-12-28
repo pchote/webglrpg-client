@@ -3,7 +3,6 @@
 // GNU General Public License, as published by the Free Software Foundation.
 // See LICENSE.html for the license terms.
 
-var map;
 var renderer;
 
 var lastTime = 0;
@@ -13,10 +12,10 @@ function tick() {
     var startTime = new Date().getTime();
     if (lastTime != 0) {
         var elapsed = startTime - lastTime;
-        map.tick(elapsed);
+        Map.tick(elapsed);
     }
     renderer.drawScene(function() {
-        map.draw();
+        Map.draw();
     });
 
     lastTime = startTime;
@@ -31,7 +30,7 @@ function showError(msg) {
 };
 
 function start() {
-    LoadScreen.init();
+    //LoadScreen.init();
     FrameCounter.init();
     document.onkeydown = Keyboard.onKeyDown;
     document.onkeyup = Keyboard.onKeyUp;
@@ -42,8 +41,9 @@ function start() {
         return;
     }
 
-    map = new Map("sewer");
-    map.runWhenLoaded(LoadScreen.checkActors);
+    Map.addZone("dungeon-top");
+    Map.addZone("dungeon-bottom");
+    //Map.runWhenLoaded(function() { LoadScreen.onMapLoaded(); });
     tick();
 }
 
@@ -53,13 +53,10 @@ var LoadScreen = {
         $('glcanvas').setStyle('display', 'none');
     },
 
-    // TODO: Do this asynchronously
-    checkActors: function() {
-        if (map.actorList.every(function(a) { return a.templateLoaded })) {
-            $('loadscreen').setStyle('display', 'none');
-            $('glcanvas').setStyle('display', 'block');
-        } else
-            map.runAfterTick(LoadScreen.checkActors);
+    onMapLoaded: function() {
+        $('loadscreen').setStyle('display', 'none');
+        $('glcanvas').setStyle('display', 'block');
+        // Todo: worry about actor init?
     }
 }
 

@@ -19,9 +19,9 @@ var TilesetLoader = {
             link: 'chain',
             secure: true,
             onSuccess: function(json) { ts.onJsonLoaded(json) },
-            onFailure: function() { console.error("Error fetching map "+file)},
+            onFailure: function() { console.error("Error fetching tileset "+file)},
             onError: function(text, error) {
-                console.error("Error parsing map file "+file+": "+error );
+                console.error("Error parsing tileset file "+file+": "+error );
                 console.error(text);
             },
         }).send();
