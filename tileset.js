@@ -77,6 +77,10 @@ var Tileset = new Class({
         return this.tileGeometry[tileId].d;
     },
 
+    getTileWalkPoly: function(tileId) {
+        return this.tileGeometry[tileId].w;
+    },
+
     getTileTexCoords: function(id, texId) {
         var o = this.tiles[texId];
         var s = [this.tileSize/this.sheetSize[0], this.tileSize/this.sheetSize[1]];

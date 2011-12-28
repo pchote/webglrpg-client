@@ -240,18 +240,18 @@ Activities.Move = new Class({
         this.accumTime = newTime;
         vec3.lerp(this.from, this.to, frac, a.pos);
 
+        // Fix fp inaccuracy
+        if (this.accumTime >= this.length) {
+            a.pos[0] = Math.round(a.pos[0]);
+            a.pos[1] = Math.round(a.pos[1]);
+        }
+
         // Calculate new height
         var hx = a.pos[0]+a.hotspotOffset[0];
         var hy = a.pos[1]+a.hotspotOffset[1];
         a.pos[2] = map.getHeight(hx, hy);
 
-        if (this.accumTime >= this.length) {
-            a.pos[0] = Math.round(a.pos[0]);
-            a.pos[1] = Math.round(a.pos[1]);
-            return [];
-        }
-
-        return [this];
+        return (this.accumTime < this.length) ? [this] : [];
     }
 });
 

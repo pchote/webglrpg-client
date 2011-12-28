@@ -106,8 +106,43 @@ var Map = new Class({
         }
         var i = Math.floor(x)
         var j = Math.floor(y);
+        var dp = [x - i, y - j];
 
-        return this.data.tiles[j*this.data.width + i][2];
+        // Calculate point inside a triangle
+        var getUV = function(t, p) {
+            // Vectors relative to first vertex
+            var u = [t[1][0] - t[0][0], t[1][1] - t[0][1]];
+            var v = [t[2][0] - t[0][0], t[2][1] - t[0][1]];
+
+            // Calculate basis transformation
+            var d = 1 / (u[0]*v[1] - u[1]*v[0]);
+            var T = [d*v[1], -d*v[0], -d*u[1],  d*u[0]];
+
+            // Return new coords
+            var u = (p[0] - t[0][0])*T[0] + (p[1] - t[0][1])*T[1];
+            var v = (p[0] - t[0][0])*T[2] + (p[1] - t[0][1])*T[3];
+            return [u,v];
+        }
+
+        // Check if any of the tiles defines a custom walk polygon
+        var tiles = this.data.tiles[j*this.data.width + i];
+        var n = Math.floor(tiles.length/3);
+        for (var l = 0; l < n; l++) {
+            var poly = this.tileset.getTileWalkPoly(tiles[3*l]);
+            if (!poly)
+                continue;
+
+            // Loop over triangles
+            for (var p = 0; p < poly.length; p++) {
+                var uv = getUV(poly[p], dp);
+                var w = uv[0] + uv[1];
+                if (w <= 1)
+                    return tiles[3*l+2] + (1-w)*poly[p][0][2] + uv[0]*poly[p][1][2] + uv[1]*poly[p][2][2];
+            }
+        }
+
+        // Use the height of the first tile in the cell
+        return tiles[2];
     },
 
     drawRow: function(row) {
@@ -157,7 +192,6 @@ var Map = new Class({
         if (x < 0 || y < 0 || x >= this.data.width || y >= this.data.height)
             return null;
         var k = y*this.data.width + x;
-        console.log(x,y,this.walkability[k], direction, (this.walkability[k] & direction) != 0);
         return (this.walkability[k] & direction) != 0;
     }
 });
