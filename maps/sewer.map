@@ -29,6 +29,15 @@
 	   { "id": "e2", "type": "elemental", "pos":[8,16,0], "facing":8 },
 	   { "id": "e3", "type": "elemental", "pos":[2,10,0], "facing":1 },
 	   { "id": "e4", "type": "elemental", "pos":[14,10,0], "facing":4 },
+	   { "id": "spurt1", "type": "lavaspurt", "pos":[10,11,-1.499], "facing":2 },
+	   { "id": "spurt2", "type": "lavaspurt", "pos":[9,12,-1.499], "facing":2 },
+	   { "id": "spurt3", "type": "lavaspurt", "pos":[10,13,-1.499], "facing":2 },
+	   { "id": "spurt4", "type": "lavaspurt", "pos":[7,12,-1.499], "facing":2 },
+	   { "id": "spurt5", "type": "lavaspurt", "pos":[6,11,-1.499], "facing":2 },
+	   { "id": "spurt6", "type": "lavaspurt", "pos":[6,9,-1.499], "facing":2 },
+	   { "id": "spurt7", "type": "lavaspurt", "pos":[7,8,-1.499], "facing":2 },
+	   { "id": "spurt8", "type": "lavaspurt", "pos":[9,9,-1.499], "facing":2 },
+	   { "id": "spurt9", "type": "lavaspurt", "pos":[10,8,-1.499], "facing":2 },
 	   { "id": "player", "type": "player", "pos":[8,6,0] }
 	]
 }
