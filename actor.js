@@ -81,6 +81,7 @@ var ActorLoader = {
 
                     // Instantiate existing actor instances
                     self.actorInstances[type].each(function(i) { i.instance.whenLoaded(i.data); });
+                    console.log("Loaded actor definition", file);
                 },
                 onFailure: function() { console.error("Error fetching actor definition: "+file)},
             }).send();
@@ -150,7 +151,6 @@ var Actor = new Class({
     draw: function() {
         if (!this.loaded)
             return;
-
         mvPushMatrix();
         mat4.translate(mvMatrix, this.pos);
 
