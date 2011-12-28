@@ -38,6 +38,6 @@
 	   { "id": "spurt7", "type": "lavaspurt", "pos":[7,8,-1.499], "facing":2 },
 	   { "id": "spurt8", "type": "lavaspurt", "pos":[9,9,-1.499], "facing":2 },
 	   { "id": "spurt9", "type": "lavaspurt", "pos":[10,8,-1.499], "facing":2 },
-	   { "id": "player", "type": "player", "pos":[8,6,0] }
+	   { "id": "player", "type": "player", "pos":[8,10,-1], "facing":8 }
 	]
 }
