@@ -3,9 +3,6 @@
 // GNU General Public License, as published by the Free Software Foundation.
 // See LICENSE.html for the license terms.
 
-// Tile definition
-// TODO: handle walkability info, etc 
-
 var TilesetLoader = {
     tilesets: {},
 
