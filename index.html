@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>WebGL Tile Renderer</title>
+		<title>Webglrpg-client Engine Demo</title>
 		<!-- External libraries -->
 		<script src="webgl-utils.js" type="text/javascript"></script>
 		<script src="gl-matrix-min.js" type="text/javascript"></script>
@@ -14,16 +14,18 @@
 		<script src="actor.js" type="text/javascript"></script>
 		<style>
 			body { color:#fff }
-			p { color: #000;}
+			p { color: #000 }
 			a { color: #900 }
 			#loadscreen, #errorscreen { width:640px; height:480px; background:#000 }
 			#loadscreen h1, #errorscreen h1 { position:relative; text-align: center; top:200px }
 			#errorscreen { display: none }
-			#errorscreen h1 { color: #900 }
+			#errorscreen h1 { color: #900; top:170px }
+			#errorscreen p { color: #fff }
 			#loadscreen { display: none }
-			#loadscreen p {	position:relative; left: 245px; width: 150px; top: 160px; margin: 0 10px 10px 0;}
-			#errorscreen p { position:relative;	text-align: center;	top: 160px;	margin: 0 10px 10px 0; }
-			#loadscreen p span { float:right; color: #090; }
+			#loadscreen p {	position:relative; left: 245px; width: 150px; top: 160px; margin: 0 10px 10px 0 }
+			#errorscreen p { position:relative;	text-align: center;	top: 160px;	margin: 0 10px 10px 0 }
+			#loadscreen p span { float:right; color: #090 }
+			.name { color: #009 }
 		</style>
 	</head>
 	<body onload="start()">
@@ -35,7 +37,8 @@
 			<p id="errormessage">Something went wrong...</p>
 		</div>
 		<canvas id="glcanvas" width="640" height="480"></canvas>
-		<p>Controls: Use WASD to move</p>
 		<p>FPS: <span id="fpscounter"></span> :: Frame Time: <span id="frametimer"></span> ms</p>
+		<p>Controls: Use WASD to move</p>
+		<p>Game Engine &amp; Models: <span class="name">Paul Chote</span>; Artwork: <a href="http://opengameart.org">OpenGameArt.Org</a> (<span class="name">MrBeast</span>, <span class="name">Antifarea</span>, <span class="name">Se-M-yazza</span>)</p>
 	</body>
 </html>
