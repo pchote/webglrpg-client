@@ -39,7 +39,7 @@ function updateLoadScreen() {
         $('map-done').appendText('Done');
     }
 
-    if (!actorsLoaded && map.actorList.every(function(a) { a.templateLoaded })) {
+    if (!actorsLoaded && map.actorList.every(function(a) { return a.templateLoaded })) {
         actorsLoaded = true;
         $('actors-done').appendText('Done');
     }
