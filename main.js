@@ -34,7 +34,7 @@ var mapLoaded = false;
 var actorsLoaded = false;
 var texturesLoaded = false;
 function updateLoadScreen() {
-    if (!mapLoaded && map.loadedGeometry) {
+    if (!mapLoaded && map.loaded) {
         mapLoaded = true;
         $('map-done').appendText('Done');
     }

@@ -43,6 +43,7 @@ var Direction = {
         return "down";
     }
 };
+
 var ActorLoader = {
     actorTypes: [],
 
@@ -80,7 +81,7 @@ var ActorLoader = {
                     self.actorTypes[type].implement({ templateLoaded: true });
 
                     // Instantiate existing actor instances
-                    self.actorInstances[type].each(function(i) { i.instance.whenLoaded(i.data); });
+                    self.actorInstances[type].each(function(i) { i.instance.onLoad(i.data); });
                     console.log("Loaded actor definition", file);
                 },
                 onFailure: function() { console.error("Error fetching actor definition: "+file)},
@@ -89,7 +90,7 @@ var ActorLoader = {
 
         var instance = new this.actorTypes[type]();
         if (instance.templateLoaded)
-            instance.whenLoaded(data);
+            instance.onTemplateLoaded(data);
         else
             this.actorInstances[type].push({'instance' : instance, 'data' : data});
 
@@ -106,35 +107,48 @@ var Actor = new Class({
     pos: vec3.create(),
     facing: Direction.Right,
 
-    whenLoaded: function(data) {
+    onLoadActions: [],
+    runWhenLoaded: function(a) {
+        if (this.loaded)
+            a();
+        else
+            this.onLoadActions.push(a);
+    },
+
+    onLoad: function(instanceData) {
+        if (this.loaded)
+            return;
+
         if (!this.src || !this.sheetSize || !this.tileSize || !this.frames) {
             console.error("Invalid actor definition");
             return;
         }
 
-        if (data) {
-            if (data.id)
-                this.id = data.id;
-            if (data.pos)
-                vec3.set(data.pos, this.pos);
-            if (data.y)
-                this.pos[1] = data.y;
-            if (data.facing)
-                this.facing = data.facing;
+        if (instanceData) {
+            if (instanceData.id)
+                this.id = instanceData.id;
+            if (instanceData.pos)
+                vec3.set(instanceData.pos, this.pos);
+            if (instanceData.facing)
+                this.facing = instanceData.facing;
         }
 
         this.texture = renderer.createTexture(this.src);
-        var s = map.tileset.tileSize;
-        var ts = [this.tileSize[0]/s, this.tileSize[1]/s];
-        var v = [[0,0,0], [ts[0], 0, 0], [ts[0], 0, ts[1]], [0, 0, ts[1]]];
-        var poly = [[v[2], v[3], v[0]], [v[2], v[0], v[1]]].flatten();
-        this.vertexPosBuf = renderer.createBuffer(poly, gl.STATIC_DRAW, 3);
+        this.vertexTexBuf = renderer.createBuffer(this.getTexCoords(), gl.DYNAMIC_DRAW, 2);
 
-        var vertexTexCoords = this.getTexCoords();
-        this.vertexTexBuf = renderer.createBuffer(vertexTexCoords, gl.DYNAMIC_DRAW, 2);
-        this.loaded = true;
-        if(map.loadedGeometry)
-            this.init();
+        var self = this;
+        map.runWhenLoaded(function() {
+            var s = map.tileset.tileSize;
+            var ts = [self.tileSize[0]/s, self.tileSize[1]/s];
+            var v = [[0,0,0], [ts[0], 0, 0], [ts[0], 0, ts[1]], [0, 0, ts[1]]];
+            var poly = [[v[2], v[3], v[0]], [v[2], v[0], v[1]]].flatten();
+            self.vertexPosBuf = renderer.createBuffer(poly, gl.STATIC_DRAW, 3);
+
+            self.init();
+            self.loaded = true;
+            self.onLoadActions.each(function(a) { a(); });
+            self.onLoadActions.length = 0;
+        });
     },
 
     getTexCoords: function(i) {
@@ -151,6 +165,7 @@ var Actor = new Class({
     draw: function() {
         if (!this.loaded)
             return;
+
         mvPushMatrix();
         mat4.translate(mvMatrix, this.pos);
 
@@ -181,6 +196,9 @@ var Actor = new Class({
     },
 
     tickOuter: function(dt) {
+        if (!this.loaded)
+            return;
+
         if (this.tick)
             this.tick(dt);
 

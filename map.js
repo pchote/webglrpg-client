@@ -4,9 +4,6 @@
 // See LICENSE.html for the license terms.
 
 var Map = new Class({
-    loadedGeometry: false,
-    loadedActors: false,
-
     // Map Data
     data: {},
 
@@ -15,6 +12,22 @@ var Map = new Class({
 
     // Actors stored as an array for easy sorting and enumeration
     actorList: [],
+
+    // Actions to run after the map ticks
+    // Won't run until the map has loaded
+    afterTick: [],
+    runAfterTick: function(a) {
+        this.afterTick.push(a);
+    },
+
+    // Actions to run when the map has loaded
+    onLoadActions: [],
+    runWhenLoaded: function(a) {
+        if (this.loaded)
+            a();
+        else
+            this.onLoadActions.push(a);
+    },
 
     // Request the map data
     initialize: function(name) {
@@ -25,7 +38,7 @@ var Map = new Class({
             method: 'get',
             link: 'chain',
             secure: true,
-            onSuccess: function(json) { self.dataRecieved(json) },
+            onSuccess: function(json) { self.onDataRecieved(json) },
             onFailure: function() { console.error("Error fetching map "+file)},
             onError: function(text, error) {
                 console.error("Error parsing map file "+file+": "+error );
@@ -35,23 +48,20 @@ var Map = new Class({
     },
 
     // Recieved map definition JSON
-    dataRecieved: function(data) {
+    onDataRecieved: function(data) {
         this.data = data;
         var self = this;
 
         // Load tileset if necessary, then create level geometry
         this.tileset = TilesetLoader.load(data.tileset);
-        this.tileset.whenLoaded(function() { self.createGeometry() });
+        this.tileset.runWhenLoaded(function() { self.onTilesetLoaded(); });
 
         // Load actors
         data.actors.each(function(a) { self.addActor(a) });
-        this.loadedActors = true;
     },
 
     // Parse map data and create level
-    createGeometry: function() {
-        var self = this;
-
+    onTilesetLoaded: function() {
         // Initialize map geometry
         this.vertexPosBuf = [];
         this.vertexTexBuf = [];
@@ -78,10 +88,11 @@ var Map = new Class({
             this.vertexPosBuf[j] = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
             this.vertexTexBuf[j] = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
         }
-        this.loadedGeometry = true;
+        this.loaded = true;
+        console.log("Loaded tileset definition", this.src);
 
-        // Initialize actors
-        this.actorList.each(function(a) { if(a.loaded) a.init(); });
+        this.onLoadActions.each(function(a) { a(); });
+        this.onLoadActions.length = 0;
     },
 
     // Instantiate and add an actor to the map
@@ -155,7 +166,7 @@ var Map = new Class({
     },
 
     draw: function() {
-        if (!this.loadedGeometry || !this.loadedActors)
+        if (!this.loaded)
             return;
 
         this.actorList.sort(function(a,b) { return b.pos[1] - a.pos[1]; })
@@ -174,19 +185,16 @@ var Map = new Class({
         mvPopMatrix();
     },
 
-    // Activities to run after the map ticks
-    // Activities should return a new action to run in the next tick, or null
-    afterTick: [],
     tick: function(dt) {
+        if (!this.loaded)
+            return;
+
         this.actorList.each(function(a) { a.tickOuter(dt); });
 
         if (this.afterTick.length)
             this.afterTick = this.afterTick.map(function(a) { return a(); }).clean();
     },
 
-    runAfterTick: function(a) {
-        this.afterTick.push(a);
-    },
 
     isWalkable: function(x, y, direction) {
         if (x < 0 || y < 0 || x >= this.data.width || y >= this.data.height)

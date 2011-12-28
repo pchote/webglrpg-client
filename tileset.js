@@ -38,9 +38,16 @@ var Tileset = new Class({
     sheetSize: [0,0],
     tileSize: 0,
     tiles: {},
-
     loaded: false,
-    loadActions: [],
+
+    // Actions to run when the tileset has loaded
+    onLoadActions: [],
+    runWhenLoaded: function(a) {
+        if (this.loaded)
+            a();
+        else
+            this.onLoadActions.push(a);
+    },
 
     // Received tileset definition JSON
     dataRecieved: function(data) {
@@ -50,21 +57,12 @@ var Tileset = new Class({
 
         // Run whenReady actions
         this.loaded = true;
-        this.loadActions.each(function(a) { a() });
-        this.loadActions.length = 0;
-
+        this.onLoadActions.each(function(a) { a() });
+        this.onLoadActions.length = 0;
         console.log("Loaded tileset definition", this.src);
 
         if (this.bgColor)
     	    gl.clearColor(this.bgColor[0]/255, this.bgColor[1]/255, this.bgColor[2]/255, 1.0);
-    },
-
-    // Add an action to run after the tileset has loaded
-    whenLoaded: function(func) {
-        if (this.loaded)
-            func(); // Already loaded, run immediately
-        else
-            this.loadActions.push(func); // Add to queue
     },
 
     getTileVertices: function(id, offset) {
