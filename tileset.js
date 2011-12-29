@@ -61,7 +61,7 @@ var Tileset = new Class({
         this.definitionLoaded = true;
         this.onDefinitionLoadActions.run();
 
-        this.texture = renderer.createTexture(this.src);
+        this.texture = renderer.loadTexture(this.src);
         this.texture.runWhenLoaded(this.onTextureLoaded.bind(this));
 
         if (this.bgColor)

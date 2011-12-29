@@ -133,7 +133,7 @@ var Actor = new Class({
         if (instanceData.facing)
             this.facing = instanceData.facing;
 
-        this.texture = renderer.createTexture(this.src)
+        this.texture = renderer.loadTexture(this.src)
         this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
         this.vertexTexBuf = renderer.createBuffer(this.getTexCoords(), gl.DYNAMIC_DRAW, 2);
 

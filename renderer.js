@@ -136,43 +136,16 @@ var Renderer = new Class({
         gl.vertexAttribPointer(attribute, buffer.itemSize, gl.FLOAT, false, 0, 0);
     },
 
-    createTexture: function(src) {
-        if (this.textures[src]) {
+    loadTexture: function(src) {
+        if (this.textures[src])
             return this.textures[src];
-        }
 
-        var t = gl.createTexture();
-        t.image = new Image();
-        t.loaded = false;
-        t.image.onload = function() {
-            console.log("loaded image "+t.image.src);
-            gl.bindTexture(gl.TEXTURE_2D, t);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t.image);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            gl.bindTexture(gl.TEXTURE_2D, null);
-
-            t.loaded = true;
-            t.onLoadActions.run();
-        };
-
-        t.onLoadActions = new ActionQueue();
-        t.runWhenLoaded = function(a) {
-            if (t.loaded)
-                a();
-            else
-                t.onLoadActions.add(a);
-        }
-
-        t.image.src = src;
-        this.textures[src] = t;
-        return t;
+        this.textures[src] = new Texture(src);
+        return this.textures[src];
     },
 
     bindTexture: function(texture) {
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.uniform1i(shaderProgram.samplerUniform, 0);
+        texture.bind();
     },
 
     cameraAngle: 45,
@@ -187,6 +160,42 @@ var Renderer = new Class({
         mat4.translate(mvMatrix, this.cameraOffset);
     }
 });
+
+var Texture = new Class({
+    loaded: false,
+    onLoadActions: new ActionQueue(),
+
+    runWhenLoaded: function(a) {
+        if (this.loaded) a();
+        else this.onLoadActions.add(a);
+    },
+
+    initialize: function(src) {
+        this.src = src;
+        this.glTexture = gl.createTexture();
+        this.image = new Image();
+        this.image.onload = this.onImageLoaded.bind(this);
+        this.image.src = src;
+    },
+
+    onImageLoaded: function() {
+        console.log("loaded image "+this.src);
+        gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+
+        this.loaded = true;
+        this.onLoadActions.run();
+    },
+
+    bind: function() {
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+        gl.uniform1i(shaderProgram.samplerUniform, 0);
+    }
+})
 
 function mvPushMatrix() {
     var copy = mat4.create();
