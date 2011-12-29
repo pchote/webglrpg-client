@@ -153,16 +153,15 @@ var Renderer = new Class({
             gl.bindTexture(gl.TEXTURE_2D, null);
 
             t.loaded = true;
-            t.onLoadActions.each(function(a) { a(); });
-            t.onLoadActions.length = 0;
+            t.onLoadActions.run();
         };
 
-        t.onLoadActions = [];
+        t.onLoadActions = new ActionQueue();
         t.runWhenLoaded = function(a) {
             if (t.loaded)
                 a();
             else
-                t.onLoadActions.push(a);
+                t.onLoadActions.add(a);
         }
 
         t.image.src = src;

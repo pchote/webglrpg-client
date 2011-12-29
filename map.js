@@ -7,9 +7,9 @@ var Map = {
     zoneDict: {},
     zoneList: [],
 
-    afterTickActions: [],
+    afterTickActions: new ActionQueue(),
     runAfterTick: function(a) {
-        this.afterTickActions.push(a);
+        this.afterTickActions.add(a);
     },
 
     // Sort zones for correct render order
@@ -39,8 +39,7 @@ var Map = {
         for (var z in this.zoneDict)
             this.zoneDict[z].tick(dt);
 
-        this.afterTickActions.each(function(a) { a(); });
-        this.afterTickActions.length = 0;
+        this.afterTickActions.run();
     },
 
     draw: function(dt) {
@@ -69,10 +68,10 @@ var Zone = new Class({
     actorList: [],
 
     // Actions to run when the map has loaded
-    onLoadActions: [],
+    onLoadActions: new ActionQueue(),
     runWhenLoaded: function(a) {
         if (this.loaded) a();
-        else this.onLoadActions.push(a);
+        else this.onLoadActions.add(a);
     },
 
     // Zone ctor
@@ -156,9 +155,7 @@ var Zone = new Class({
 
         this.loaded = true;
         console.log("Initialized zone", this.id);
-
-        this.onLoadActions.each(function(a) { a(); });
-        this.onLoadActions.length = 0;
+        this.onLoadActions.run();
     },
 
     // Add an existing actor to the zone

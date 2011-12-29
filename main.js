@@ -114,3 +114,15 @@ var Keyboard = {
         return max;
     }
 }
+
+var ActionQueue = new Class({
+    actions: [],
+    add: function(a) {
+        this.actions.push(a);
+    },
+
+    run: function() {
+        this.actions.each(function(a) { a(); });
+        this.actions.length = 0;
+    }
+});

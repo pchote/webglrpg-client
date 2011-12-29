@@ -108,12 +108,12 @@ var Actor = new Class({
     pos: vec3.create(),
     facing: Direction.Right,
 
-    onLoadActions: [],
+    onLoadActions: new ActionQueue(),
     runWhenLoaded: function(a) {
         if (this.loaded)
             a();
         else
-            this.onLoadActions.push(a);
+            this.onLoadActions.add(a);
     },
 
     onLoad: function(instanceData) {
@@ -155,8 +155,7 @@ var Actor = new Class({
         this.loaded = true;
         console.log("Initialized actor "+this.id+" in "+this.zone.id);
 
-        this.onLoadActions.each(function(a) { a(); });
-        this.onLoadActions.length = 0;
+        this.onLoadActions.run();
     },
 
     getTexCoords: function(i) {

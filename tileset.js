@@ -38,18 +38,18 @@ var Tileset = new Class({
     loaded: false,
 
     // Actions to run when the tileset has loaded
-    onLoadActions: [],
+    onLoadActions: new ActionQueue(),
     runWhenLoaded: function(a) {
         if (this.loaded) a();
-        else this.onLoadActions.push(a);
+        else this.onLoadActions.add(a);
     },
 
     // Actions to run after the tileset definition has loaded,
     // but before the texture is ready
-    onDefinitionLoadActions: [],
+    onDefinitionLoadActions: new ActionQueue(),
     runWhenDefinitionLoaded: function(a) {
         if (this.definitionLoaded) a();
-        else this.onDefinitionLoadActions.push(a);
+        else this.onDefinitionLoadActions.add(a);
     },
 
     // Received tileset definition JSON
@@ -59,8 +59,7 @@ var Tileset = new Class({
 
         // Definition actions must always run before loaded actions
         this.definitionLoaded = true;
-        this.onDefinitionLoadActions.each(function(a) { a() });
-        this.onDefinitionLoadActions.length = 0;
+        this.onDefinitionLoadActions.run();
 
         this.texture = renderer.createTexture(this.src);
         this.texture.runWhenLoaded(this.onTextureLoaded.bind(this));
@@ -73,8 +72,7 @@ var Tileset = new Class({
         this.loaded = true;
         console.log("Initialized tileset", this.file);
 
-        this.onLoadActions.each(function(a) { a() });
-        this.onLoadActions.length = 0;
+        this.onLoadActions.run();
     },
 
     getTileVertices: function(id, offset) {
