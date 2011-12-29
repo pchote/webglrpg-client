@@ -40,10 +40,16 @@ var Tileset = new Class({
     // Actions to run when the tileset has loaded
     onLoadActions: [],
     runWhenLoaded: function(a) {
-        if (this.loaded)
-            a();
-        else
-            this.onLoadActions.push(a);
+        if (this.loaded) a();
+        else this.onLoadActions.push(a);
+    },
+
+    // Actions to run after the tileset definition has loaded,
+    // but before the texture is ready
+    onDefinitionLoadActions: [],
+    runWhenDefinitionLoaded: function(a) {
+        if (this.definitionLoaded) a();
+        else this.onDefinitionLoadActions.push(a);
     },
 
     // Received tileset definition JSON
@@ -51,9 +57,13 @@ var Tileset = new Class({
         // Merge tileset definition into this object
         Object.merge(this, data);
 
+        // Definition actions must always run before loaded actions
+        this.definitionLoaded = true;
+        this.onDefinitionLoadActions.each(function(a) { a() });
+        this.onDefinitionLoadActions.length = 0;
+
         this.texture = renderer.createTexture(this.src);
-        var self = this;
-        this.texture.runWhenLoaded(function() { self.onTextureLoaded() });
+        this.texture.runWhenLoaded(function() { this.onTextureLoaded() }.bind(this));
 
         if (this.bgColor)
     	    gl.clearColor(this.bgColor[0]/255, this.bgColor[1]/255, this.bgColor[2]/255, 1.0);

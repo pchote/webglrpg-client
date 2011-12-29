@@ -95,17 +95,17 @@ var Zone = new Class({
         this.bounds = data.bounds;
         this.size = [data.bounds[2] - data.bounds[0], data.bounds[3] - data.bounds[1]];
         this.cells = data.cells;
-        var self = this;
 
         // Load tileset if necessary, then create level geometry
         this.tileset = TilesetLoader.load(data.tileset);
-        this.tileset.runWhenLoaded(function() { self.onTilesetLoaded(); });
+        this.tileset.runWhenDefinitionLoaded(function() { this.onTilesetDefinitionLoaded(); }.bind(this));
+        this.tileset.runWhenLoaded(function() { this.onTilesetLoaded(); }.bind(this));
 
         // Load actors
-        data.actors.each(function(a) { self.loadActor(a) });
+        data.actors.each(function(a) { this.loadActor(a) }.bind(this));
     },
 
-    onTilesetLoaded: function() {
+    onTilesetDefinitionLoaded: function() {
         // Initialize zone geometry
         this.vertexPosBuf = [];
         this.vertexTexBuf = [];
@@ -133,7 +133,9 @@ var Zone = new Class({
             this.vertexPosBuf[j] = renderer.createBuffer(vertices, gl.STATIC_DRAW, 3);
             this.vertexTexBuf[j] = renderer.createBuffer(vertexTexCoords, gl.STATIC_DRAW, 2);
         }
+    },
 
+    onTilesetLoaded: function() {
         this.loaded = true;
         console.log("Initialized zone", this.id);
 
