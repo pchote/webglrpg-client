@@ -17,13 +17,17 @@ var Map = {
         this.zoneList.sort(function(a,b) { return b.bounds[1] - a.bounds[1]; });
     },
 
-    addZone: function(zoneId) {
+    loadZone: function(zoneId) {
+        if (this.zoneDict[zoneId])
+            return this.zoneDict[zoneId];
+
         var z = new Zone(zoneId);
         this.zoneDict[zoneId] = z;
         this.zoneList.push(z);
 
-        // Insert into render order
-        z.runWhenLoaded(function() { Map.sortZones(); });
+        // Sort for correct render order
+        z.runWhenLoaded(function() { this.sortZones(); }.bind(this));
+        return z;
     },
 
     removeZone: function(zoneId) {

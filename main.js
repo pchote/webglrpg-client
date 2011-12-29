@@ -41,10 +41,8 @@ function start() {
         return;
     }
 
-    Map.addZone("dungeon-top");
-    Map.addZone("dungeon-bottom");
-    Map.zoneDict["dungeon-top"].runWhenLoaded(function() { LoadScreen.onZoneLoaded(); });
-    Map.zoneDict["dungeon-bottom"].runWhenLoaded(function() { LoadScreen.onZoneLoaded(); });
+    Map.loadZone("dungeon-top").runWhenLoaded(function() { LoadScreen.onZoneLoaded(); });
+    Map.loadZone("dungeon-bottom").runWhenLoaded(function() { LoadScreen.onZoneLoaded(); });
 
     tick();
 }
