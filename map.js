@@ -7,6 +7,11 @@ var Map = {
     zoneDict: {},
     zoneList: [],
 
+    afterTickActions: [],
+    runAfterTick: function(a) {
+        this.afterTickActions.push(a);
+    },
+
     // Sort zones for correct render order
     sortZones: function() {
         this.zoneList.sort(function(a,b) { return b.bounds[1] - a.bounds[1]; });
@@ -29,11 +34,22 @@ var Map = {
     tick: function(dt) {
         for (var z in this.zoneDict)
             this.zoneDict[z].tick(dt);
+
+        this.afterTickActions.each(function(a) { a(); });
+        this.afterTickActions.length = 0;
     },
 
     draw: function(dt) {
         for (var z in this.zoneDict)
             this.zoneDict[z].draw();
+    },
+
+    zoneContaining: function(x, y) {
+        for (var z in this.zoneDict) {
+            if (this.zoneDict[z].isInZone(x, y))
+                return this.zoneDict[z];
+        }
+        return null;
     }
 }
 
@@ -86,7 +102,7 @@ var Zone = new Class({
         this.tileset.runWhenLoaded(function() { self.onTilesetLoaded(); });
 
         // Load actors
-        data.actors.each(function(a) { self.addActor(a) });
+        data.actors.each(function(a) { self.loadActor(a) });
     },
 
     onTilesetLoaded: function() {
@@ -125,11 +141,18 @@ var Zone = new Class({
         this.onLoadActions.length = 0;
     },
 
-    // Instantiate and add an actor to the zone
-    addActor: function (actorData) {
+    // load and add an actor to the zone
+    loadActor: function (actorData) {
         actorData.zone = this;
         var a = ActorLoader.load(actorData);
         this.actorDict[actorData.id] = a;
+        this.actorList.push(a);
+    },
+
+    // Add an existing actor to the zone
+    addActor: function (a) {
+        a.zone = this;
+        this.actorDict[a.id] = a;
         this.actorList.push(a);
     },
 

@@ -268,18 +268,52 @@ Activities.Move = new Class({
         vec3.lerp(this.from, this.to, frac, a.pos);
 
         // Fix fp inaccuracy
-        if (this.accumTime >= this.length) {
-            a.pos[0] = Math.round(a.pos[0]);
-            a.pos[1] = Math.round(a.pos[1]);
+        if (this.accumTime >= this.length)
+            vec3.set(this.to, a.pos);
+
+        this.onMoveTick(a, args, a.pos);
+        return (this.accumTime < this.length) ? [this] : [];
+    },
+
+    // Overriden by MoveIntoZone
+    onMoveTick: function(a, args) {
+        var hx = a.pos[0] + a.hotspotOffset[0];
+        var hy = a.pos[1] + a.hotspotOffset[1];
+        a.pos[2] = a.zone.getHeight(hx, hy);
+    }
+});
+
+Activities.ChangeZone = new Class({
+	Extends: Activities.Move,
+
+    type: "MoveIntoZone",
+    initialize: function(from, fromZone, to, toZone, length) {
+        this.fromZone = fromZone;
+        this.toZone = toZone;
+        this.parent(from, to, length);
+    },
+
+    onMoveTick: function(a, args) {
+        // Move into the new zone
+        if (!a.zone.isInZone(a.pos[0], a.pos[1])) {
+            this.fromZone.removeActor(a.id);
+
+            // Defer until aftertick to stop the actor being ticked twice
+            Map.runAfterTick(function() {
+                this.toZone.addActor(a);
+                console.log(a.id+" changed zone from "+this.fromZone.id+" to "+this.toZone.id);
+            }.bind(this));
         }
 
         // Calculate new height
-        var hx = a.pos[0]+a.hotspotOffset[0];
-        var hy = a.pos[1]+a.hotspotOffset[1];
-        a.pos[2] = a.zone.getHeight(hx, hy);
+        var hx = a.pos[0] + a.hotspotOffset[0];
+        var hy = a.pos[1] + a.hotspotOffset[1];
 
-        return (this.accumTime < this.length) ? [this] : [];
-    }
+        if (!this.switchRenderZone && !this.fromZone.isInZone(hx, hy))
+            this.switchRenderZone = true;
+
+        a.pos[2] = (this.switchRenderZone ? this.toZone : this.fromZone).getHeight(hx, hy);
+    },
 });
 
 Activities.Face = new Class({
@@ -299,6 +333,8 @@ Activities.Face = new Class({
 Activities.InputWatcher = new Class({
     type: "InputWatcher",
     tick: function(a, args) {
+        var moveTime = 600; // move time in ms
+
         var dirKey = Keyboard.lastPressed('wsad');
         if (!dirKey) {
             // Eat any remaining time
@@ -311,14 +347,27 @@ Activities.InputWatcher = new Class({
         var to = vec3.create([Math.round(from[0] + dp[0]), Math.round(from[1] + dp[1]), 0]);
         var facing = Direction.fromDelta(dp);
 
-        if (!a.zone.isWalkable(a.pos[0], a.pos[1], facing) ||
-            !a.zone.isWalkable(to[0], to[1], Direction.reverse(facing))) {
+        if (!a.zone.isWalkable(a.pos[0], a.pos[1], facing)) {
             args.dt = 0;
             return [new Activities.Face(facing), this];
         }
 
-        var animLength = 600; // move time in ms
-        return [new Activities.Move(a.pos, to, animLength), this];
+        // Check zones
+        if (!a.zone.isInZone(to[0], to[1])) {
+            var z = Map.zoneContaining(to[0], to[1]);
+            if (!z || !z.isWalkable(to[0], to[1], Direction.reverse(facing))) {
+                args.dt = 0;
+                return [new Activities.Face(facing), this];
+            }
+            return [new Activities.ChangeZone(a.pos, a.zone, to, z, moveTime), this];
+        }
+
+        if (!a.zone.isWalkable(to[0], to[1], Direction.reverse(facing))) {
+            args.dt = 0;
+            return [new Activities.Face(facing), this];
+        }
+
+        return [new Activities.Move(a.pos, to, moveTime), this];
     }
 });
 
