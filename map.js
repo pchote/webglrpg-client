@@ -99,10 +99,20 @@ var Zone = new Class({
         // Load tileset if necessary, then create level geometry
         this.tileset = TilesetLoader.load(data.tileset);
         this.tileset.runWhenDefinitionLoaded(function() { this.onTilesetDefinitionLoaded(); }.bind(this));
-        this.tileset.runWhenLoaded(function() { this.onTilesetLoaded(); }.bind(this));
+        this.tileset.runWhenLoaded(function() { this.onTilesetOrActorLoaded(); }.bind(this));
 
         // Load actors
-        data.actors.each(function(a) { this.loadActor(a) }.bind(this));
+        data.actors.each(function(data) {
+            data.zone = this;
+            var a = ActorLoader.load(data);
+            this.actorDict[data.id] = a;
+            this.actorList.push(a);
+        }.bind(this));
+
+        // Notify the zone when the actor has loaded
+        this.actorList.each(function(a) {
+            a.runWhenLoaded(function() { this.onTilesetOrActorLoaded(); }.bind(this));
+        }.bind(this));
     },
 
     onTilesetDefinitionLoaded: function() {
@@ -135,20 +145,15 @@ var Zone = new Class({
         }
     },
 
-    onTilesetLoaded: function() {
+    onTilesetOrActorLoaded: function() {
+        if (!this.tileset.loaded || !this.actorList.every(function(a) { return a.loaded; }))
+            return;
+
         this.loaded = true;
         console.log("Initialized zone", this.id);
 
         this.onLoadActions.each(function(a) { a(); });
         this.onLoadActions.length = 0;
-    },
-
-    // load and add an actor to the zone
-    loadActor: function (actorData) {
-        actorData.zone = this;
-        var a = ActorLoader.load(actorData);
-        this.actorDict[actorData.id] = a;
-        this.actorList.push(a);
     },
 
     // Add an existing actor to the zone

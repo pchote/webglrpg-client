@@ -133,28 +133,27 @@ var Actor = new Class({
         if (instanceData.facing)
             this.facing = instanceData.facing;
 
-        var self = this;
         this.texture = renderer.createTexture(this.src)
-        this.texture.runWhenLoaded(function() { self.onZoneOrTextureLoaded() });
+        this.texture.runWhenLoaded(function() { this.onTilesetOrTextureLoaded() }.bind(this));
         this.vertexTexBuf = renderer.createBuffer(this.getTexCoords(), gl.DYNAMIC_DRAW, 2);
 
-        this.zone.runWhenLoaded(function() {
-            var s = self.zone.tileset.tileSize;
-            var ts = [self.tileSize[0]/s, self.tileSize[1]/s];
+        this.zone.tileset.runWhenDefinitionLoaded(function() {
+            var s = this.zone.tileset.tileSize;
+            var ts = [this.tileSize[0]/s, this.tileSize[1]/s];
             var v = [[0,0,0], [ts[0], 0, 0], [ts[0], 0, ts[1]], [0, 0, ts[1]]];
             var poly = [[v[2], v[3], v[0]], [v[2], v[0], v[1]]].flatten();
-            self.vertexPosBuf = renderer.createBuffer(poly, gl.STATIC_DRAW, 3);
-            self.onZoneOrTextureLoaded();
-        });
+            this.vertexPosBuf = renderer.createBuffer(poly, gl.STATIC_DRAW, 3);
+            this.onTilesetOrTextureLoaded();
+        }.bind(this));
     },
 
-    onZoneOrTextureLoaded: function() {
-        if (!this.zone.loaded || !this.texture.loaded)
+    onTilesetOrTextureLoaded: function() {
+        if (!this.zone.tileset.loaded || !this.texture.loaded)
             return;
 
         this.init(); // Hook for actor implementations
         this.loaded = true;
-        console.log("Initialized actor", this.id);
+        console.log("Initialized actor "+this.id+" in "+this.zone.id);
 
         this.onLoadActions.each(function(a) { a(); });
         this.onLoadActions.length = 0;
