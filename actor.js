@@ -134,7 +134,7 @@ var Actor = new Class({
             this.facing = instanceData.facing;
 
         this.texture = renderer.createTexture(this.src)
-        this.texture.runWhenLoaded(function() { this.onTilesetOrTextureLoaded() }.bind(this));
+        this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
         this.vertexTexBuf = renderer.createBuffer(this.getTexCoords(), gl.DYNAMIC_DRAW, 2);
 
         this.zone.tileset.runWhenDefinitionLoaded(function() {

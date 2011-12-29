@@ -41,8 +41,8 @@ function start() {
         return;
     }
 
-    Map.loadZone("dungeon-top").runWhenLoaded(function() { LoadScreen.onZoneLoaded(); });
-    Map.loadZone("dungeon-bottom").runWhenLoaded(function() { LoadScreen.onZoneLoaded(); });
+    Map.loadZone("dungeon-top").runWhenLoaded(LoadScreen.onZoneLoaded);
+    Map.loadZone("dungeon-bottom").runWhenLoaded(LoadScreen.onZoneLoaded);
 
     tick();
 }

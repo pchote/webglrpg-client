@@ -63,7 +63,7 @@ var Tileset = new Class({
         this.onDefinitionLoadActions.length = 0;
 
         this.texture = renderer.createTexture(this.src);
-        this.texture.runWhenLoaded(function() { this.onTextureLoaded() }.bind(this));
+        this.texture.runWhenLoaded(this.onTextureLoaded.bind(this));
 
         if (this.bgColor)
     	    gl.clearColor(this.bgColor[0]/255, this.bgColor[1]/255, this.bgColor[2]/255, 1.0);

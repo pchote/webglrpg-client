@@ -26,7 +26,7 @@ var Map = {
         this.zoneList.push(z);
 
         // Sort for correct render order
-        z.runWhenLoaded(function() { this.sortZones(); }.bind(this));
+        z.runWhenLoaded(this.sortZones.bind(this));
         return z;
     },
 
@@ -103,8 +103,8 @@ var Zone = new Class({
 
         // Load tileset if necessary, then create level geometry
         this.tileset = TilesetLoader.load(data.tileset);
-        this.tileset.runWhenDefinitionLoaded(function() { this.onTilesetDefinitionLoaded(); }.bind(this));
-        this.tileset.runWhenLoaded(function() { this.onTilesetOrActorLoaded(); }.bind(this));
+        this.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+        this.tileset.runWhenLoaded(this.onTilesetOrActorLoaded.bind(this));
 
         // Load actors
         data.actors.each(function(data) {
@@ -116,7 +116,7 @@ var Zone = new Class({
 
         // Notify the zone when the actor has loaded
         this.actorList.each(function(a) {
-            a.runWhenLoaded(function() { this.onTilesetOrActorLoaded(); }.bind(this));
+            a.runWhenLoaded(this.onTilesetOrActorLoaded.bind(this));
         }.bind(this));
     },
 
