@@ -137,14 +137,18 @@ var Actor = new Class({
         this.texture.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
         this.vertexTexBuf = renderer.createBuffer(this.getTexCoords(), gl.DYNAMIC_DRAW, 2);
 
-        this.zone.tileset.runWhenDefinitionLoaded(function() {
-            var s = this.zone.tileset.tileSize;
-            var ts = [this.tileSize[0]/s, this.tileSize[1]/s];
-            var v = [[0,0,0], [ts[0], 0, 0], [ts[0], 0, ts[1]], [0, 0, ts[1]]];
-            var poly = [[v[2], v[3], v[0]], [v[2], v[0], v[1]]].flatten();
-            this.vertexPosBuf = renderer.createBuffer(poly, gl.STATIC_DRAW, 3);
-            this.onTilesetOrTextureLoaded();
-        }.bind(this));
+        this.zone.tileset.runWhenDefinitionLoaded(this.onTilesetDefinitionLoaded.bind(this));
+    },
+
+    onTilesetDefinitionLoaded: function() {
+        console.log(this.id, 'onTilesetDefinitionLoaded');
+        var s = this.zone.tileset.tileSize;
+        var ts = [this.tileSize[0]/s, this.tileSize[1]/s];
+        var v = [[0,0,0], [ts[0], 0, 0], [ts[0], 0, ts[1]], [0, 0, ts[1]]];
+        var poly = [[v[2], v[3], v[0]], [v[2], v[0], v[1]]].flatten();
+        this.vertexPosBuf = renderer.createBuffer(poly, gl.STATIC_DRAW, 3);
+
+        this.zone.tileset.runWhenLoaded(this.onTilesetOrTextureLoaded.bind(this));
     },
 
     onTilesetOrTextureLoaded: function() {
