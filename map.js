@@ -50,8 +50,9 @@ var Map = {
 
     zoneContaining: function(x, y) {
         for (var z in this.zoneDict) {
-            if (this.zoneDict[z].isInZone(x, y))
-                return this.zoneDict[z];
+            var zone = this.zoneDict[z];
+            if (zone.loaded && zone.isInZone(x, y))
+                return zone;
         }
         return null;
     }
@@ -150,7 +151,7 @@ var Zone = new Class({
     },
 
     onTilesetOrActorLoaded: function() {
-        if (!this.tileset.loaded || !this.actorList.every(function(a) { return a.loaded; }))
+        if (this.loaded || !this.tileset.loaded || !this.actorList.every(function(a) { return a.loaded; }))
             return;
 
         this.loaded = true;

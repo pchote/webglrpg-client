@@ -91,7 +91,7 @@ var ActorLoader = {
 
         var instance = new this.actorTypes[type]();
         if (instance.templateLoaded)
-            instance.onTemplateLoaded(data);
+            instance.onLoad(actorData);
         else
             this.actorInstances[type].push({'instance' : instance, 'data' : actorData});
 
@@ -148,7 +148,7 @@ var Actor = new Class({
     },
 
     onTilesetOrTextureLoaded: function() {
-        if (!this.zone.tileset.loaded || !this.texture.loaded)
+        if (this.loaded || !this.zone.tileset.loaded || !this.texture.loaded)
             return;
 
         this.init(); // Hook for actor implementations
@@ -354,7 +354,7 @@ Activities.InputWatcher = new Class({
         // Check zones
         if (!a.zone.isInZone(to[0], to[1])) {
             var z = Map.zoneContaining(to[0], to[1]);
-            if (!z || !z.isWalkable(to[0], to[1], Direction.reverse(facing))) {
+            if (!z || !z.loaded || !z.isWalkable(to[0], to[1], Direction.reverse(facing))) {
                 args.dt = 0;
                 return [new Activities.Face(facing), this];
             }
