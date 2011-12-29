@@ -30,7 +30,7 @@ function showError(msg) {
 };
 
 function start() {
-    //LoadScreen.init();
+    LoadScreen.init();
     FrameCounter.init();
     document.onkeydown = Keyboard.onKeyDown;
     document.onkeyup = Keyboard.onKeyUp;
@@ -43,7 +43,9 @@ function start() {
 
     Map.addZone("dungeon-top");
     Map.addZone("dungeon-bottom");
-    //Map.runWhenLoaded(function() { LoadScreen.onMapLoaded(); });
+    Map.zoneDict["dungeon-top"].runWhenLoaded(function() { LoadScreen.onZoneLoaded(); });
+    Map.zoneDict["dungeon-bottom"].runWhenLoaded(function() { LoadScreen.onZoneLoaded(); });
+
     tick();
 }
 
@@ -53,10 +55,12 @@ var LoadScreen = {
         $('glcanvas').setStyle('display', 'none');
     },
 
-    onMapLoaded: function() {
+    onZoneLoaded: function() {
+        if (!Map.zoneList.every(function(z) { return z.loaded; }))
+            return;
+
         $('loadscreen').setStyle('display', 'none');
         $('glcanvas').setStyle('display', 'block');
-        // Todo: worry about actor init?
     }
 }
 
