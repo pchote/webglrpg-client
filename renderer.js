@@ -57,12 +57,12 @@ var Renderer = new Class({
 
                     // See if it compiled successfully
                     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                        console.error("Error compiling shader "+file+": "+gl.getShaderInfoLog(shader));
+                        debug.error("Error compiling shader "+file+": "+gl.getShaderInfoLog(shader));
                         withShader(null);
                     }
                     withShader(shader);
                 },
-                onFailure: function() { console.error("Error loading shader "+file)}
+                onFailure: function() { debug.error("Error loading shader "+file)}
             }).send();
         }
 
@@ -76,7 +76,7 @@ var Renderer = new Class({
             gl.linkProgram(shaderProgram);
 
             if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-                console.error("Could not initialise shaders");
+                debug.error("Could not initialise shaders");
                 return;
             }
 
@@ -179,7 +179,7 @@ var Texture = new Class({
     },
 
     onImageLoaded: function() {
-        console.log("loaded image "+this.src);
+        debug.log("loaded image "+this.src);
         gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);

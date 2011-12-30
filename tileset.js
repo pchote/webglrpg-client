@@ -19,10 +19,10 @@ var TilesetLoader = {
             link: 'chain',
             secure: true,
             onSuccess: function(json) { ts.onJsonLoaded(json) },
-            onFailure: function() { console.error("Error fetching tileset "+file)},
+            onFailure: function() { debug.error("Error fetching tileset "+file)},
             onError: function(text, error) {
-                console.error("Error parsing tileset file "+file+": "+error );
-                console.error(text);
+                debug.error("Error parsing tileset file "+file+": "+error );
+                debug.error(text);
             },
         }).send();
 
@@ -70,7 +70,7 @@ var Tileset = new Class({
 
     onTextureLoaded: function() {
         this.loaded = true;
-        console.log("Initialized tileset", this.file);
+        debug.log("Initialized tileset", this.file);
 
         this.onLoadActions.run();
     },

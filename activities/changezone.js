@@ -45,7 +45,7 @@ def = {
             // Defer until aftertick to stop the actor being ticked twice
             Map.runAfterTick(function() {
                 this.toZone.addActor(a);
-                console.log(a.id+" changed zone from "+this.fromZone.id+" to "+this.toZone.id);
+                debug.log(a.id+" changed zone from "+this.fromZone.id+" to "+this.toZone.id);
             }.bind(this));
         }
 

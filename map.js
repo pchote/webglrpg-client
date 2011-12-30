@@ -86,10 +86,10 @@ var Zone = new Class({
             link: 'chain',
             secure: true,
             onSuccess: function(json) { self.onJsonLoaded(json) },
-            onFailure: function() { console.error("Error fetching zone "+zoneId)},
+            onFailure: function() { debug.error("Error fetching zone "+zoneId)},
             onError: function(text, error) {
-                console.error("Error parsing zone "+zoneId+": "+error );
-                console.error(text);
+                debug.error("Error parsing zone "+zoneId+": "+error );
+                debug.error(text);
             },
         }).send();
     },
@@ -154,7 +154,7 @@ var Zone = new Class({
             return;
 
         this.loaded = true;
-        console.log("Initialized zone", this.id);
+        debug.log("Initialized zone", this.id);
         this.onLoadActions.run();
     },
 
@@ -174,7 +174,7 @@ var Zone = new Class({
     // Calculate the height of a point in the zone
     getHeight: function(x, y) {
         if (!this.isInZone(x, y)) {
-            console.error("Requesting height for ["+x+", "+y+"] outside zone bounds");
+            debug.error("Requesting height for ["+x+", "+y+"] outside zone bounds");
             return 0;
         }
 

@@ -11,7 +11,7 @@ var Network = new Class({
     },
 
     parsePacket: function (p) {
-        console.log("received packet", p);
+        debug.log("received packet", p);
         if (p.target) {
             var actor = Map.zoneDict[p.target[0]].actorDict[p.target[1]];
             var a = ActivityLoader.create(p.type, p.data, actor, p.id, p.time);

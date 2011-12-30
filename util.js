@@ -41,17 +41,17 @@ var DynamicClassLoader = new Class({
                         if (e.lineNumber)
                             lineNumber = e.lineNumber - new Error().lineNumber + 6;
 
-                        console.error("Error loading definition "+url+":"+lineNumber);
-                        console.error(e.message);
+                        debug.error("Error loading definition "+url+":"+lineNumber);
+                        debug.error(e.message);
                     }
                     self.definitions[type].implement(def);
                     self.definitions[type].implement({ templateLoaded: true });
 
                     // notify existing actor instances
                     self.instances[type].each(function(i) { if (i.f) i.f(i.i); });
-                    console.log("Loaded definition", url);
+                    debug.log("Loaded definition", url);
                 },
-                onFailure: function() { console.error("Error fetching definition: "+url)},
+                onFailure: function() { debug.error("Error fetching definition: "+url)},
             }).send();
         }
 
@@ -117,5 +117,23 @@ var ActionQueue = new Class({
     run: function() {
         this.actions.each(function(a) { a(); });
         this.actions.length = 0;
+    }
+});
+
+var Debug = new Class({
+    initialize: function(useConsole) {
+        this.useConsole = useConsole
+    },
+    
+    log: function() {
+        if (!this.useConsole)
+            return;
+        console.log.apply(console, arguments);
+    },
+
+    error: function() {
+        if (!this.useConsole)
+            return;
+        debug.error.apply(console, arguments);
     }
 });

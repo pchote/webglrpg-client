@@ -74,7 +74,7 @@ var Actor = new Class({
             return;
 
         if (!this.src || !this.sheetSize || !this.tileSize || !this.frames) {
-            console.error("Invalid actor definition");
+            debug.error("Invalid actor definition");
             return;
         }
 
@@ -109,7 +109,7 @@ var Actor = new Class({
 
         this.init(); // Hook for actor implementations
         this.loaded = true;
-        console.log("Initialized actor "+this.id+" in "+this.zone.id);
+        debug.log("Initialized actor "+this.id+" in "+this.zone.id);
 
         this.onLoadActions.run();
     },

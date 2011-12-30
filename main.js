@@ -5,6 +5,7 @@
 
 var renderer;
 var network;
+var debug;
 
 var lastTime = 0;
 function tick() {
@@ -31,6 +32,7 @@ function showError(msg) {
 };
 
 function start() {
+    debug = new Debug(true);
     LoadScreen.init();
     FrameCounter.init();
     Keyboard.init();
@@ -38,7 +40,7 @@ function start() {
     network = new Network();
     renderer = new Renderer("glcanvas");
     if (!renderer.initializedWebGl) {
-        console.error("Renderer init failed - exiting");
+        debug.error("Renderer init failed - exiting");
         return;
     }
 
