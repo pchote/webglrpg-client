@@ -163,9 +163,6 @@ var Actor = new Class({
         if (!this.loaded)
             return;
 
-        if (this.tick)
-            this.tick(time);
-
         // TODO: ensure events are run in the same order everywhere
         var toRemove = [];
         this.activityList.each(function(a) {
@@ -178,6 +175,9 @@ var Actor = new Class({
         });
 
         toRemove.each(function(a) { this.removeActivity(a.id); }.bind(this));
+
+        if (this.tick)
+            this.tick(time);
     },
 
     // Hook for actor implementations
