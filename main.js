@@ -9,17 +9,16 @@ var lastTime = 0;
 function tick() {
     requestAnimFrame(tick);
 
-    var startTime = new Date().getTime();
+    var tickTime = new Date().getTime();
     if (lastTime != 0) {
-        var elapsed = startTime - lastTime;
-        Map.tick(elapsed);
+        Map.tick(tickTime);
     }
     renderer.drawScene(function() {
         Map.draw();
     });
 
-    lastTime = startTime;
-    FrameCounter.tick(new Date().getTime() - startTime);
+    lastTime = tickTime;
+    FrameCounter.tick(new Date().getTime() - tickTime);
 }
 
 function showError(msg) {

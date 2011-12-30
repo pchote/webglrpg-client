@@ -40,12 +40,55 @@ def = {
     // Should the camera follow the player?
     bindCamera: true,
 
-    init: function() {
-        this.addActivity(new Activities.InputWatcher());
-    },
-
-    tick: function() {
+    tick: function(time) {
+        if (!this.activityList.length) {
+            var ret = this.checkInput();
+            if (ret)
+                this.addActivity(ret);
+        }
         if (this.bindCamera)
             vec3.set(this.pos, renderer.cameraPosition);
+    },
+
+    directionOffsets: {
+        'W': [0,1],
+        'S': [0,-1],
+        'A': [-1,0],
+        'D': [1,0]
+    },
+
+    checkInput: function() {
+        var moveTime = 600; // move time in ms
+
+        var dirKey = Keyboard.lastPressed('wsad');
+        if (!dirKey)
+            return null;
+
+        var faceDir = function(facing) {
+            return ActivityLoader.create("face", [facing], this);
+        }.bind(this);
+
+        var from = vec3.create(this.pos);
+        var dp = this.directionOffsets[dirKey];
+        var to = vec3.create([Math.round(from[0] + dp[0]), Math.round(from[1] + dp[1]), 0]);
+        var facing = Direction.fromDelta(dp);
+
+        if (!this.zone.isWalkable(this.pos[0], this.pos[1], facing))
+            return faceDir(facing);
+
+        // Check zones
+        if (!this.zone.isInZone(to[0], to[1])) {
+            var z = Map.zoneContaining(to[0], to[1]);
+            if (!z || !z.loaded || !z.isWalkable(to[0], to[1], Direction.reverse(facing)))
+                return faceDir(facing);
+
+            return ActivityLoader.create("changezone", [this.pos, this.zone, to, z, moveTime], this);
+        }
+
+        if (!this.zone.isWalkable(to[0], to[1], Direction.reverse(facing)))
+            return faceDir(facing);
+
+        return ActivityLoader.create("move", [this.pos, to, moveTime], this);
     }
+
 };

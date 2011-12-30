@@ -35,9 +35,9 @@ var Map = {
         delete this.zoneDict[zoneId];
     },
 
-    tick: function(dt) {
+    tick: function(time) {
         for (var z in this.zoneDict)
-            this.zoneDict[z].tick(dt);
+            this.zoneDict[z].tick(time);
 
         this.afterTickActions.run();
     },
@@ -248,11 +248,11 @@ var Zone = new Class({
         mvPopMatrix();
     },
 
-    tick: function(dt) {
+    tick: function(time) {
         if (!this.loaded)
             return;
 
-        this.actorList.each(function(a) { a.tickOuter(dt); });
+        this.actorList.each(function(a) { a.tickOuter(time); });
     },
 
     isInZone: function(x, y) {

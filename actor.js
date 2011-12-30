@@ -141,36 +141,37 @@ var Actor = new Class({
         renderer.updateBuffer(this.vertexTexBuf, this.getTexCoords());
     },
 
-    activityQueue: [],
+    activityDict: {},
+    activityList: [],
     addActivity: function(a) {
-        this.activityQueue.push(a);
+        this.activityDict[a.id] = a;
+        this.activityList.push(a);
     },
 
-    clearActivityQueue: function() {
-        this.activityQueue.length = 0;
+    removeActivity: function(id) {
+        this.activityList.erase(this.activityDict[id]);
+        delete this.activityDict[id];
     },
 
-    tickOuter: function(dt) {
+    tickOuter: function(time) {
         if (!this.loaded)
             return;
 
         if (this.tick)
-            this.tick(dt);
+            this.tick(time);
 
-        // dt will be decremented by actions
-        var args = {"dt": dt};
-        if (!this.activityQueue.length)
-            return;
+        // TODO: ensure events are run in the same order everywhere
+        var toRemove = [];
+        this.activityList.each(function(a) {
+            if (!a.loaded || a.startTime > time)
+                return;
 
-        while (dt > 0) {
-            // Remove and tick the first item in the queue
-            var ret = this.activityQueue.shift().tick(this, args);
+            // Activity returns true when it is complete
+            if (a.tick(time))
+                toRemove.push(a);
+        });
 
-            // Insert returned actions back into the queue
-            for (var i = ret.length-1; i >= 0; i--)
-                this.activityQueue.splice(0, 0, ret[i]);
-            dt = args.dt;
-        }
+        toRemove.each(function(a) { this.removeActivity(a.id); }.bind(this));
     },
 
     // Hook for actor implementations
@@ -178,150 +179,3 @@ var Actor = new Class({
 });
 
 var ActorLoader = new DynamicClassLoader(Actor, function(type) { return 'actors/'+type+'.js'; });
-
-var Activities = {}
-Activities.Move = new Class({
-    type: "Move",
-    accumTime: 0,
-    delta: vec3.create(),
-
-    initialize: function(from, to, length) {
-        this.from = vec3.create(from);
-        this.to = vec3.create(to);
-        this.facing = Direction.fromDelta([Math.round(to[0] - from[0]), Math.round(to[1] - from[1])]);
-        this.length = length;
-    },
-
-    tick: function(a, args) {
-        // Set facing
-        if (this.accumTime == 0) {
-            if (this.facing != a.facing)
-                return [new Activities.Face(this.facing), this];
-        }
-
-        var newTime = this.accumTime + args.dt;
-        if (newTime > this.length) {
-            args.dt -= this.accumTime - this.length;
-            newTime = this.length;
-        }
-        else
-            args.dt = 0;
-
-        var frac = this.accumTime/this.length;
-        var newFrame = Math.floor(frac*4);
-        if (newFrame != a.animFrame)
-            a.setFrame(newFrame);
-
-        this.accumTime = newTime;
-        vec3.lerp(this.from, this.to, frac, a.pos);
-
-        // Fix fp inaccuracy
-        if (this.accumTime >= this.length)
-            vec3.set(this.to, a.pos);
-
-        this.onMoveTick(a, args, a.pos);
-        return (this.accumTime < this.length) ? [this] : [];
-    },
-
-    // Overriden by MoveIntoZone
-    onMoveTick: function(a, args) {
-        var hx = a.pos[0] + a.hotspotOffset[0];
-        var hy = a.pos[1] + a.hotspotOffset[1];
-        a.pos[2] = a.zone.getHeight(hx, hy);
-    }
-});
-
-Activities.ChangeZone = new Class({
-	Extends: Activities.Move,
-
-    type: "MoveIntoZone",
-    initialize: function(from, fromZone, to, toZone, length) {
-        this.fromZone = fromZone;
-        this.toZone = toZone;
-        this.parent(from, to, length);
-    },
-
-    onMoveTick: function(a, args) {
-        // Move into the new zone
-        if (!a.zone.isInZone(a.pos[0], a.pos[1])) {
-            this.fromZone.removeActor(a.id);
-
-            // Defer until aftertick to stop the actor being ticked twice
-            Map.runAfterTick(function() {
-                this.toZone.addActor(a);
-                console.log(a.id+" changed zone from "+this.fromZone.id+" to "+this.toZone.id);
-            }.bind(this));
-        }
-
-        // Calculate new height
-        var hx = a.pos[0] + a.hotspotOffset[0];
-        var hy = a.pos[1] + a.hotspotOffset[1];
-
-        if (!this.switchRenderZone && !this.fromZone.isInZone(hx, hy))
-            this.switchRenderZone = true;
-
-        a.pos[2] = (this.switchRenderZone ? this.toZone : this.fromZone).getHeight(hx, hy);
-    },
-});
-
-Activities.Face = new Class({
-    type: "Face",
-
-    initialize: function(facing) {
-        this.facing = facing;
-    },
-
-    tick: function(a, args) {
-        a.facing = this.facing;
-        a.setFrame(0);
-        return [];
-    }
-});
-
-Activities.InputWatcher = new Class({
-    type: "InputWatcher",
-    tick: function(a, args) {
-        var moveTime = 600; // move time in ms
-
-        var dirKey = Keyboard.lastPressed('wsad');
-        if (!dirKey) {
-            // Eat any remaining time
-            args.dt = 0;
-            return [this];
-        }
-
-        var from = vec3.create(a.pos);
-        var dp = Activities.InputWatcher.DirectionOffsets[dirKey];
-        var to = vec3.create([Math.round(from[0] + dp[0]), Math.round(from[1] + dp[1]), 0]);
-        var facing = Direction.fromDelta(dp);
-
-        if (!a.zone.isWalkable(a.pos[0], a.pos[1], facing)) {
-            args.dt = 0;
-            return [new Activities.Face(facing), this];
-        }
-
-        // Check zones
-        if (!a.zone.isInZone(to[0], to[1])) {
-            var z = Map.zoneContaining(to[0], to[1]);
-            if (!z || !z.loaded || !z.isWalkable(to[0], to[1], Direction.reverse(facing))) {
-                args.dt = 0;
-                return [new Activities.Face(facing), this];
-            }
-            return [new Activities.ChangeZone(a.pos, a.zone, to, z, moveTime), this];
-        }
-
-        if (!a.zone.isWalkable(to[0], to[1], Direction.reverse(facing))) {
-            args.dt = 0;
-            return [new Activities.Face(facing), this];
-        }
-
-        return [new Activities.Move(a.pos, to, moveTime), this];
-    }
-});
-
-Activities.InputWatcher.DirectionOffsets = {
-    'W': [0,1],
-    'S': [0,-1],
-    'A': [-1,0],
-    'D': [1,0]
-};

@@ -21,6 +21,7 @@ def = {
     drawOffset: vec3.create([0, 0, 0]),
     hotspotOffset: vec3.create([0.5, 0.5, 0]),
 
+    lastTime: 0,
     accumTime: 0,    
     blowTime: 0,
     frameTime: 150,
@@ -29,8 +30,14 @@ def = {
         this.blowTime = Number.random(0, 5000);
     },
 
-    tick: function(dt) {
-        this.accumTime += dt;
+    tick: function(time) {
+        if (lastTime == 0) {
+            lastTime = time;
+            return;
+        }
+
+        this.accumTime += time - lastTime;
+
         if (this.accumTime < this.frameTime)
             return;
 
