@@ -72,6 +72,8 @@ def = {
             return null;
 
         var faceDir = function(facing) {
+            if (this.facing == facing)
+                return null;
             return ActivityLoader.create("face", [facing], this);
         }.bind(this);
 
