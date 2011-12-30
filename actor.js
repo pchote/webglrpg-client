@@ -44,61 +44,6 @@ var Direction = {
     }
 };
 
-var ActorLoader = {
-    actorTypes: [],
-
-    // Instances that require loading
-    actorInstances: {},
-
-    load: function(actorData) {
-        var type = actorData.type;
-        // Actor hasn't been loaded - create a skeleton class and return an instance
-        // The class will be extended with real behavior after load, updating all instances
-        if (typeof(this.actorTypes[type]) === 'undefined') {
-            this.actorTypes[type] = new Class({
-                Extends: Actor
-            });
-
-            this.actorInstances[type] = [];
-            var self = this;
-            var file = "actors/"+type+".js";
-            new Request({
-                url: file,
-                method: 'get',
-                link: 'chain',
-                onSuccess: function(json) {
-                    var def = {};
-                    try { eval(json); }
-                    catch (e) {
-                        var lineNumber = '';
-                        // Dirty browser specific hack to determine line number in loaded file
-                        if (e.lineNumber)
-                            lineNumber = e.lineNumber - new Error().lineNumber + 6;
-
-                        console.error("Error loading "+file+":"+lineNumber);
-                        console.error(e.message);
-                    }
-                    self.actorTypes[type].implement(def);
-                    self.actorTypes[type].implement({ templateLoaded: true });
-
-                    // Instantiate existing actor instances
-                    self.actorInstances[type].each(function(i) { i.instance.onLoad(i.data); });
-                    console.log("Loaded actor definition", file);
-                },
-                onFailure: function() { console.error("Error fetching actor definition: "+file)},
-            }).send();
-        }
-
-        var instance = new this.actorTypes[type]();
-        if (instance.templateLoaded)
-            instance.onLoad(actorData);
-        else
-            this.actorInstances[type].push({'instance' : instance, 'data' : actorData});
-
-        return instance;
-    }
-}
-
 var Actor = new Class({
     templateLoaded: false,
     drawOffset: vec3.create(),
@@ -141,7 +86,6 @@ var Actor = new Class({
     },
 
     onTilesetDefinitionLoaded: function() {
-        console.log(this.id, 'onTilesetDefinitionLoaded');
         var s = this.zone.tileset.tileSize;
         var ts = [this.tileSize[0]/s, this.tileSize[1]/s];
         var v = [[0,0,0], [ts[0], 0, 0], [ts[0], 0, ts[1]], [0, 0, ts[1]]];
@@ -232,6 +176,8 @@ var Actor = new Class({
     // Hook for actor implementations
     init: function() {}
 });
+
+var ActorLoader = new DynamicClassLoader(Actor, function(type) { return 'actors/'+type+'.js'; });
 
 var Activities = {}
 Activities.Move = new Class({

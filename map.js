@@ -108,7 +108,7 @@ var Zone = new Class({
         // Load actors
         data.actors.each(function(data) {
             data.zone = this;
-            var a = ActorLoader.load(data);
+            var a = ActorLoader.load(data.type, function(b) { b.onLoad(data); });
             this.actorDict[data.id] = a;
             this.actorList.push(a);
         }.bind(this));
