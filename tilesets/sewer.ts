@@ -1,5 +1,5 @@
 {
-    "src": "sewer.png",
+    "src": "art/sewer.png",
     "sheetSize": [256, 256],
     "tileSize": 16,
 	"bgColor": [31,20,29],

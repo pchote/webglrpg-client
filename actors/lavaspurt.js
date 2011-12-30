@@ -5,7 +5,7 @@
 
 def = {
     // Character art from http://opengameart.org/content/twelve-16x18-rpg-character-sprites-including-npcs-and-elementals
-    src: "sewer.png",
+    src: "art/sewer.png",
     sheetSize: [256,256],
     tileSize: [16,16],
     frames: {

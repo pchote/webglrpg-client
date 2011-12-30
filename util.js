@@ -69,3 +69,48 @@ var DynamicClassLoader = new Class({
         return instance;
     }
 });
+
+var Keyboard = {
+    activeKeys: [],
+    shift: false,
+
+    onKeyDown: function(e) {
+        var c = String.fromCharCode(e.keyCode);
+        if (Keyboard.activeKeys.indexOf(c) < 0)
+            Keyboard.activeKeys.push(c);
+        Keyboard.shift = e.shiftKey;
+    },
+
+    onKeyUp: function(e) {
+        var c = String.fromCharCode(e.keyCode);
+        Keyboard.activeKeys.erase(c);
+    },
+
+    // Return the last pressed key in keys
+    lastPressed: function(keys) {
+        var lower = keys.toUpperCase();
+        var max = null;
+        var maxI = -1;
+        for (var i = 0; i < keys.length; i++) {
+            var k = lower[i];
+            var index = Keyboard.activeKeys.indexOf(k);
+            if (index > maxI) {
+                max = k;
+                maxI = index;
+            }
+        }
+        return max;
+    }
+}
+
+var ActionQueue = new Class({
+    actions: [],
+    add: function(a) {
+        this.actions.push(a);
+    },
+
+    run: function() {
+        this.actions.each(function(a) { a(); });
+        this.actions.length = 0;
+    }
+});

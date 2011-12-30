@@ -5,7 +5,7 @@
 
 def = {
     // Character art from http://opengameart.org/content/chara-seth-scorpio
-    src: "player.gif",
+    src: "art/player.gif",
     sheetSize: [128,256],
     tileSize: [24,32],
     frames: {

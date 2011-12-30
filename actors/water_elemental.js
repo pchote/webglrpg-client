@@ -5,7 +5,7 @@
 
 def = {
     // Character art from http://opengameart.org/content/twelve-16x18-rpg-character-sprites-including-npcs-and-elementals
-    src: "elementals.gif",
+    src: "art/elementals.gif",
     srcSize: {w:64, h:128},
     size: {w:16, h:18},
     frames: {
