@@ -43,8 +43,15 @@ def = {
     tick: function(time) {
         if (!this.activityList.length) {
             var ret = this.checkInput();
-            if (ret)
+            if (ret) {
+                // Send activity to the server
+                network.sendActivity(ret);
+
+                // Start running activity locally to avoid latency
+                // Local activity will be replaced with a server-sanitised
+                // version on the next update
                 this.addActivity(ret);
+            }
         }
         if (this.bindCamera)
             vec3.set(this.pos, renderer.cameraPosition);

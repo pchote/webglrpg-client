@@ -4,8 +4,6 @@
 // See LICENSE.html for the license terms.
 
 def = {
-    type: "face",
-
     init: function(facing) {
         this.facing = facing;
     },

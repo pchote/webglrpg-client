@@ -4,9 +4,10 @@
 // See LICENSE.html for the license terms.
 
 Activity = new Class({
-    onConstruct: function(actor, id, time, args) {
+    onConstruct: function(type, actor, id, time, args) {
         this.actor = actor;
         this.id = id;
+        this.type = type;
         this.startTime = time;
         this.creationArgs = args;
     },
@@ -33,5 +34,5 @@ ActivityLoader.create = function(type, args, actor, id, time) {
         time = new Date().getTime();
     if (!id)
         id = actor.id+"-"+type+"-"+time;
-    return this.load(type, function(a) { a.onLoad(args); }, function(a) { a.onConstruct(actor, id, time, args); });
+    return this.load(type, function(a) { a.onLoad(args); }, function(a) { a.onConstruct(type, actor, id, time, args); });
 };

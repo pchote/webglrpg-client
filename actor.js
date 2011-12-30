@@ -55,10 +55,8 @@ var Actor = new Class({
 
     onLoadActions: new ActionQueue(),
     runWhenLoaded: function(a) {
-        if (this.loaded)
-            a();
-        else
-            this.onLoadActions.add(a);
+        if (this.loaded) a();
+        else this.onLoadActions.add(a);
     },
 
     onLoad: function(instanceData) {
@@ -144,6 +142,9 @@ var Actor = new Class({
     activityDict: {},
     activityList: [],
     addActivity: function(a) {
+        if (this.activityDict[a.id])
+            this.removeActivity(a.id);
+
         this.activityDict[a.id] = a;
         this.activityList.push(a);
     },

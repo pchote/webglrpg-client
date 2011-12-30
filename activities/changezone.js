@@ -4,8 +4,6 @@
 // See LICENSE.html for the license terms.
 
 def = {
-    type: "changezone",
-
     init: function(from, fromZone, to, toZone, length) {
         this.fromZone = fromZone;
         this.toZone = toZone;

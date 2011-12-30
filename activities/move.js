@@ -4,9 +4,6 @@
 // See LICENSE.html for the license terms.
 
 def = {
-    type: "move",
-    delta: vec3.create(),
-
     init: function(from, to, length) {
         this.from = vec3.create(from);
         this.to = vec3.create(to);

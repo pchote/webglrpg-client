@@ -4,6 +4,7 @@
 // See LICENSE.html for the license terms.
 
 var renderer;
+var network;
 
 var lastTime = 0;
 function tick() {
@@ -11,6 +12,7 @@ function tick() {
 
     var tickTime = new Date().getTime();
     if (lastTime != 0) {
+        network.tick(tickTime);
         Map.tick(tickTime);
     }
     renderer.drawScene(function() {
@@ -34,6 +36,7 @@ function start() {
     document.onkeydown = Keyboard.onKeyDown;
     document.onkeyup = Keyboard.onKeyUp;
 
+    network = new Network();
     renderer = new Renderer("glcanvas");
     if (!renderer.initializedWebGl) {
         console.error("Renderer init failed - exiting");
@@ -44,6 +47,7 @@ function start() {
     Map.loadZone("dungeon-bottom");
     Map.zoneList.each(function(z) { z.runWhenLoaded(LoadScreen.onZoneLoaded) });
 
+    //window.setTimeout(network.injectTestData.pass(new Date().getTime(), network), 1000);
     tick();
 }
 
