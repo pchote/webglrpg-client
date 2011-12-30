@@ -57,19 +57,17 @@ def = {
             vec3.set(this.pos, renderer.cameraPosition);
     },
 
-    directionOffsets: {
-        'W': [0,1],
-        'S': [0,-1],
-        'A': [-1,0],
-        'D': [1,0]
-    },
-
     checkInput: function() {
         var moveTime = 600; // move time in ms
 
-        var dirKey = Keyboard.lastPressed('wsad');
-        if (!dirKey)
-            return null;
+        var facing = Direction.None;
+        switch (Keyboard.lastPressed('wsad')) {
+            case 'w': facing = Direction.Up; break;
+            case 's': facing = Direction.Down; break;
+            case 'a': facing = Direction.Left; break;
+            case 'd': facing = Direction.Right; break;
+            default: return null;
+        }
 
         var faceDir = function(facing) {
             if (this.facing == facing)
@@ -78,9 +76,8 @@ def = {
         }.bind(this);
 
         var from = vec3.create(this.pos);
-        var dp = this.directionOffsets[dirKey];
+        var dp = Direction.toOffset(facing);
         var to = vec3.create([Math.round(from[0] + dp[0]), Math.round(from[1] + dp[1]), 0]);
-        var facing = Direction.fromDelta(dp);
 
         if (!this.zone.isWalkable(this.pos[0], this.pos[1], facing))
             return faceDir(facing);

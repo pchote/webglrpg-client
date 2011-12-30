@@ -9,7 +9,7 @@ def = {
         this.toZone = Map.loadZone(toZoneId);
         this.from = vec3.create(from);
         this.to = vec3.create(to);
-        this.facing = Direction.fromDelta([Math.round(to[0] - from[0]), Math.round(to[1] - from[1])]);
+        this.facing = Direction.fromOffset([Math.round(to[0] - from[0]), Math.round(to[1] - from[1])]);
         this.length = length;
     },
 

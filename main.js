@@ -33,8 +33,7 @@ function showError(msg) {
 function start() {
     LoadScreen.init();
     FrameCounter.init();
-    document.onkeydown = Keyboard.onKeyDown;
-    document.onkeyup = Keyboard.onKeyUp;
+    Keyboard.init();
 
     network = new Network();
     renderer = new Renderer("glcanvas");

@@ -11,7 +11,7 @@ var Direction = {
     Down: 8,
     All: 15,
 
-    fromDelta: function(dp) {
+    fromOffset: function(dp) {
         if (dp[0] > 0)
             return Direction.Right;
         if (dp[0] < 0)
@@ -21,6 +21,16 @@ var Direction = {
         if (dp[1] < 0)
             return Direction.Down;
         return 0;
+    },
+
+    toOffset: function(dir) {
+        switch (dir) {
+            case Direction.Right: return [1, 0];
+            case Direction.Up: return [0, 1];
+            case Direction.Left: return [-1, 0];
+            case Direction.Down: return [0, -1];
+        }
+        return [0,0];
     },
 
     reverse: function(dir) {

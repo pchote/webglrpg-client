@@ -74,21 +74,26 @@ var Keyboard = {
     activeKeys: [],
     shift: false,
 
+    init: function() {
+        document.onkeydown = Keyboard.onKeyDown;
+        document.onkeyup = Keyboard.onKeyUp;
+    },
+
     onKeyDown: function(e) {
-        var c = String.fromCharCode(e.keyCode);
+        var c = String.fromCharCode(e.keyCode).toLowerCase();
         if (Keyboard.activeKeys.indexOf(c) < 0)
             Keyboard.activeKeys.push(c);
         Keyboard.shift = e.shiftKey;
     },
 
     onKeyUp: function(e) {
-        var c = String.fromCharCode(e.keyCode);
+        var c = String.fromCharCode(e.keyCode).toLowerCase();
         Keyboard.activeKeys.erase(c);
     },
 
     // Return the last pressed key in keys
     lastPressed: function(keys) {
-        var lower = keys.toUpperCase();
+        var lower = keys.toLowerCase();
         var max = null;
         var maxI = -1;
         for (var i = 0; i < keys.length; i++) {
