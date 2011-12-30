@@ -70,7 +70,7 @@ var Tileset = new Class({
 
     onTextureLoaded: function() {
         this.loaded = true;
-        debug.log("Initialized tileset", this.file);
+        debug.log("Initialized tileset '"+this.file+"'");
 
         this.onLoadActions.run();
     },

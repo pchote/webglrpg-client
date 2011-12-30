@@ -109,7 +109,7 @@ var Actor = new Class({
 
         this.init(); // Hook for actor implementations
         this.loaded = true;
-        debug.log("Initialized actor "+this.id+" in "+this.zone.id);
+        debug.log("Initialized actor '"+this.id+"' in zone '"+this.zone.id+"'");
 
         this.onLoadActions.run();
     },

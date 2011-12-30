@@ -41,7 +41,7 @@ var DynamicClassLoader = new Class({
                         if (e.lineNumber)
                             lineNumber = e.lineNumber - new Error().lineNumber + 6;
 
-                        debug.error("Error loading definition "+url+":"+lineNumber);
+                        debug.error("Error in type definition for "+type+":"+lineNumber);
                         debug.error(e.message);
                     }
                     self.definitions[type].implement(def);
@@ -49,9 +49,9 @@ var DynamicClassLoader = new Class({
 
                     // notify existing actor instances
                     self.instances[type].each(function(i) { if (i.f) i.f(i.i); });
-                    debug.log("Loaded definition", url);
+                    debug.log("Loaded definition for type '"+type+"'");
                 },
-                onFailure: function() { debug.error("Error fetching definition: "+url)},
+                onFailure: function() { debug.error("Error fetching definition for '"+type+"'")},
             }).send();
         }
 

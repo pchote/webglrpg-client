@@ -154,7 +154,7 @@ var Zone = new Class({
             return;
 
         this.loaded = true;
-        debug.log("Initialized zone", this.id);
+        debug.log("Initialized zone '"+this.id+"'");
         this.onLoadActions.run();
     },
 
