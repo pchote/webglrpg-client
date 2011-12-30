@@ -12,11 +12,30 @@ var Network = new Class({
 
     parsePacket: function (p) {
         debug.log("received packet", p);
-        if (p.target) {
+
+        var getActor = function() {
             var actor = Map.zoneDict[p.target[0]].actorDict[p.target[1]];
-            var a = ActivityLoader.create(p.type, p.data, actor, p.id, p.time);
-            actor.addActivity(a);
-            return;
+            if (!actor) {
+                // Search other zones
+                for (var i = 0; i < Map.zoneList.length; i++) {
+                    var a = Map.zoneList[i].actorDict[p.target[1]]
+                    if (a) {
+                        debug.log("Received activity for actor '"+p.target[1]+"' in zone '"+p.target[0]+"', but actor was in zone '"+Map.zoneList[i].id+"'");
+                        return a;
+                    }
+                }
+
+                // Actor not found
+                return null;
+            }
+        };
+
+        if (p.target) {
+            var actor = getActor();
+            if (actor)
+                actor.addActivity(ActivityLoader.create(p.type, p.data, actor, p.id, p.time));
+            else
+                debug.error("Received activity for unknown actor '"+p.target[1]+"'");
         }
     },
 
