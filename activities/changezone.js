@@ -4,9 +4,9 @@
 // See LICENSE.html for the license terms.
 
 def = {
-    init: function(from, fromZone, to, toZone, length) {
-        this.fromZone = fromZone;
-        this.toZone = toZone;
+    init: function(fromZoneId, from, toZoneId, to, length) {
+        this.fromZone = Map.loadZone(fromZoneId);
+        this.toZone = Map.loadZone(toZoneId);
         this.from = vec3.create(from);
         this.to = vec3.create(to);
         this.facing = Direction.fromDelta([Math.round(to[0] - from[0]), Math.round(to[1] - from[1])]);
@@ -14,6 +14,9 @@ def = {
     },
 
     tick: function(time) {
+        if (!this.toZone.loaded || !this.fromZone.loaded)
+            return;
+
         var a = this.actor;
 
         // Set facing

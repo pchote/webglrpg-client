@@ -89,7 +89,7 @@ def = {
             if (!z || !z.loaded || !z.isWalkable(to[0], to[1], Direction.reverse(facing)))
                 return faceDir(facing);
 
-            return ActivityLoader.create("changezone", [this.pos, this.zone, to, z, moveTime], this);
+            return ActivityLoader.create("changezone", [this.zone.id, this.pos, z.id, to, moveTime], this);
         }
 
         if (!this.zone.isWalkable(to[0], to[1], Direction.reverse(facing)))
