@@ -14,7 +14,7 @@ var Map = {
 
     // Sort zones for correct render order
     sortZones: function() {
-        this.zoneList.sort(function(a,b) { return b.bounds[1] - a.bounds[1]; });
+        this.zoneList.sort(function(a,b) { return a.bounds[1] - b.bounds[1]; });
     },
 
     loadZone: function(zoneId) {
@@ -232,19 +232,19 @@ var Zone = new Class({
         if (!this.loaded)
             return;
 
-        this.actorList.sort(function(a,b) { return b.pos[1] - a.pos[1]; })
+        this.actorList.sort(function(a,b) { return a.pos[1] - b.pos[1]; })
         mvPushMatrix();
         renderer.setCamera();
 
         var k = 0, maxK = this.actorList.length;
-        for (var j = this.size[1] - 1; j >= 0; j--) {
-            gl.clear(gl.DEPTH_BUFFER_BIT);
+        for (var j = 0; j < this.size[1]; j++) {
             this.drawRow(j);
 
-            for (; k < maxK && this.actorList[k].pos[1] >= j + this.bounds[1]; k++)
-                this.actorList[k].draw();
+            while (k < maxK && this.actorList[k].pos[1] - this.bounds[1] <= j)
+                this.actorList[k++].draw();
         }
-
+        while (k < maxK)
+            this.actorList[k++].draw();
         mvPopMatrix();
     },
 

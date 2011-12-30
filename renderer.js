@@ -112,6 +112,8 @@ var Renderer = new Class({
         mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
         mat4.identity(mvMatrix);
 
+        // Flip y axis
+        pMatrix[5] *= -1;
         drawFunc();
     },
 
@@ -154,7 +156,7 @@ var Renderer = new Class({
     cameraOffset: vec3.create(),
     setCamera: function() {
         mat4.translate(mvMatrix, [0.0, 0.0, -15.0]);
-        mat4.rotate(mvMatrix, degToRad(-this.cameraAngle), [1, 0, 0]);
+        mat4.rotate(mvMatrix, degToRad(this.cameraAngle), [1, 0, 0]);
 
         vec3.negate(this.cameraPosition, this.cameraOffset);
         mat4.translate(mvMatrix, this.cameraOffset);

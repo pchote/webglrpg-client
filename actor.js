@@ -17,18 +17,18 @@ var Direction = {
         if (dp[0] < 0)
             return Direction.Left;
         if (dp[1] > 0)
-            return Direction.Up;
-        if (dp[1] < 0)
             return Direction.Down;
+        if (dp[1] < 0)
+            return Direction.Up;
         return 0;
     },
 
     toOffset: function(dir) {
         switch (dir) {
             case Direction.Right: return [1, 0];
-            case Direction.Up: return [0, 1];
+            case Direction.Up: return [0, -1];
             case Direction.Left: return [-1, 0];
-            case Direction.Down: return [0, -1];
+            case Direction.Down: return [0, 1];
         }
         return [0,0];
     },
@@ -133,14 +133,18 @@ var Actor = new Class({
         mat4.translate(mvMatrix, this.pos);
 
         // Undo rotation so that character plane is normal to LOS
-        mat4.rotate(mvMatrix, degToRad(-renderer.cameraAngle), [1, 0, 0]);
         mat4.translate(mvMatrix, this.drawOffset);
+        mat4.rotate(mvMatrix, degToRad(renderer.cameraAngle), [1, 0, 0]);
         renderer.bindBuffer(this.vertexPosBuf, shaderProgram.vertexPositionAttribute);
         renderer.bindBuffer(this.vertexTexBuf, shaderProgram.textureCoordAttribute);
         renderer.bindTexture(this.texture);
-
         shaderProgram.setMatrixUniforms();
+
+        // Actors always render on top of everything behind them
+        gl.depthFunc(gl.ALWAYS);
         gl.drawArrays(gl.TRIANGLES, 0, this.vertexPosBuf.numItems);
+        gl.depthFunc(gl.LESS);
+
         mvPopMatrix();
     },
 

@@ -34,7 +34,7 @@ def = {
             {u: 48, v: 72}
         ]
     },
-    drawOffset: vec3.create([0, 0, 0]),
+    drawOffset: vec3.create([0, 1, 0]),
     hotspotOffset: vec3.create([0.5, 0.5, 0]),
     
     pos: vec3.create([2,3,0.5]),
