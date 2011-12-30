@@ -32,7 +32,7 @@ function showError(msg) {
 };
 
 function start() {
-    debug = new Debug(true);
+    debug = new Debug(false);
     LoadScreen.init();
     FrameCounter.init();
     Keyboard.init();
