@@ -12,15 +12,13 @@ def = {
     },
 
     tick: function(time) {
+        var a = this.actor;
         if (!this.loaded)
             return;
 
-        var a = this.actor;
         // Set facing
-        if (this.facing != a.facing) {
-            a.facing = this.facing;
-            a.setFrame(0);
-        }
+        if (this.facing != a.facing)
+            a.setFacing(this.facing);
 
         var endTime = this.startTime + this.length;
         var frac = (time - this.startTime)/this.length;
@@ -38,6 +36,7 @@ def = {
         var hx = a.pos[0] + a.hotspotOffset[0];
         var hy = a.pos[1] + a.hotspotOffset[1];
         a.pos[2] = a.zone.getHeight(hx, hy);
+
         return time >= endTime;
     }
 };

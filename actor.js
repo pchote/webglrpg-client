@@ -139,6 +139,11 @@ var Actor = new Class({
         renderer.updateBuffer(this.vertexTexBuf, this.getTexCoords());
     },
 
+    setFacing: function(facing) {
+        this.facing = facing;
+        this.setFrame(this.animFrame);
+    },
+
     activityDict: {},
     activityList: [],
     addActivity: function(a) {

@@ -9,8 +9,8 @@ def = {
     },
 
     tick: function(time) {
-        this.actor.facing = this.facing;
-        this.actor.setFrame(0);
+        if (this.facing != this.actor.facing)
+            this.actor.setFacing(this.facing);
         return true;
     }
 };
