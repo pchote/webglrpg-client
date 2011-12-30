@@ -163,7 +163,14 @@ var Actor = new Class({
         if (!this.loaded)
             return;
 
-        // TODO: ensure events are run in the same order everywhere
+        // Sort activities by increasing startTime, then by id
+        this.activityList.sort(function(a,b) {
+            var dt = a.startTime - b.startTime;
+            if (!dt)
+                return dt;
+            return (a.id > b.id) ? 1 : -1;
+        });
+
         var toRemove = [];
         this.activityList.each(function(a) {
             if (!a.loaded || a.startTime > time)
