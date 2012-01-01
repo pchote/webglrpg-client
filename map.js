@@ -81,7 +81,7 @@ var Zone = new Class({
         this.id = zoneId;
         var self = this;
         new Request.JSON({
-            url: "maps/"+zoneId+".map",
+            url: config.zoneRequestUrl(zoneId),
             method: 'get',
             link: 'chain',
             secure: true,

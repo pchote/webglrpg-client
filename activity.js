@@ -28,7 +28,7 @@ Activity = new Class({
     }
 });
 
-var ActivityLoader = new DynamicClassLoader(Activity, function(type) { return "activities/"+type+".js" });
+var ActivityLoader = new DynamicClassLoader(Activity, config.activityRequestUrl);
 ActivityLoader.create = function(type, args, actor, id, time) {
     if (!time)
         time = new Date().getTime();

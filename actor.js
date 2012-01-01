@@ -205,4 +205,4 @@ var Actor = new Class({
     init: function() {}
 });
 
-var ActorLoader = new DynamicClassLoader(Actor, function(type) { return 'actors/'+type+'.js'; });
+var ActorLoader = new DynamicClassLoader(Actor, config.actorRequestUrl);

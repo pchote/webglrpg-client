@@ -12,16 +12,16 @@ var TilesetLoader = {
             return ts;
 
         this.tilesets[name] = ts = new Tileset();
-        this.tilesets[name].file = "tilesets/"+name+".ts";
+        ts.name = name;
         new Request.JSON({
-            url: this.tilesets[name].file,
+            url: config.tilesetRequestUrl(name),
             method: 'get',
             link: 'chain',
             secure: true,
             onSuccess: function(json) { ts.onJsonLoaded(json) },
-            onFailure: function() { debug.error("Error fetching tileset "+file)},
+            onFailure: function() { debug.error("Error fetching tileset definition '"+ts.name+"'")},
             onError: function(text, error) {
-                debug.error("Error parsing tileset file "+file+": "+error );
+                debug.error("Error parsing tileset '"+ts.name+"' definition: "+error );
                 debug.error(text);
             },
         }).send();
@@ -70,7 +70,7 @@ var Tileset = new Class({
 
     onTextureLoaded: function() {
         this.loaded = true;
-        debug.log("Initialized tileset '"+this.file+"'");
+        debug.log("Initialized tileset '"+this.name+"'");
 
         this.onLoadActions.run();
     },
