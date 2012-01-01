@@ -48,7 +48,7 @@ function start() {
     Map.loadZone("dungeon-bottom");
     Map.zoneList.each(function(z) { z.runWhenLoaded(LoadScreen.onZoneLoaded) });
 
-    //window.setTimeout(network.injectTestData.pass(new Date().getTime(), network), 1000);
+    //network.injectTestData.bind(network).delay(1000);
     tick();
 }
 

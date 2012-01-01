@@ -21,9 +21,10 @@ Activity = new Class({
         return {
             "id": this.id,
             "time": this.startTime,
-            "target" : [this.actor.zone.id, this.actor.id],
+            "zone" : this.actor.zone.id,
+            "actor": this.actor.id,
             "type": this.type,
-            "data": this.creationArgs,
+            "args": this.creationArgs,
         };
     }
 });

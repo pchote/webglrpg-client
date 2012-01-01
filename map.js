@@ -39,7 +39,7 @@ var Map = {
         for (var z in this.zoneDict)
             this.zoneDict[z].tick(time);
 
-        this.afterTickActions.run();
+        this.afterTickActions.run(time);
     },
 
     draw: function(dt) {
@@ -106,12 +106,7 @@ var Zone = new Class({
         this.tileset.runWhenLoaded(this.onTilesetOrActorLoaded.bind(this));
 
         // Load actors
-        data.actors.each(function(data) {
-            data.zone = this;
-            var a = ActorLoader.load(data.type, function(b) { b.onLoad(data); });
-            this.actorDict[data.id] = a;
-            this.actorList.push(a);
-        }.bind(this));
+        data.actors.each(this.loadActor.bind(this));
 
         // Notify the zone when the actor has loaded
         this.actorList.each(function(a) {
@@ -156,6 +151,13 @@ var Zone = new Class({
         this.loaded = true;
         debug.log("Initialized zone '"+this.id+"'");
         this.onLoadActions.run();
+    },
+
+    loadActor: function (data) {
+        data.zone = this;
+        var a = ActorLoader.load(data.type, function(b) { b.onLoad(data); });
+        this.actorDict[data.id] = a;
+        this.actorList.push(a);
     },
 
     // Add an existing actor to the zone

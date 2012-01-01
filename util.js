@@ -108,6 +108,8 @@ var Keyboard = {
     }
 }
 
+// A queue of actions to be run.
+// Actions that return true are retained
 var ActionQueue = new Class({
     actions: [],
     add: function(a) {
@@ -115,8 +117,8 @@ var ActionQueue = new Class({
     },
 
     run: function() {
-        this.actions.each(function(a) { a(); });
-        this.actions.length = 0;
+        var args = arguments;
+        this.actions = this.actions.filter(function(a) { return a(args); });
     }
 });
 

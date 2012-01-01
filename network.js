@@ -12,58 +12,121 @@ var Network = new Class({
 
     parsePacket: function (p) {
         debug.log("received packet", p);
-
-        var getActor = function() {
-            var actor = Map.zoneDict[p.target[0]].actorDict[p.target[1]];
-            if (!actor) {
-                // Search other zones
-                for (var i = 0; i < Map.zoneList.length; i++) {
-                    var a = Map.zoneList[i].actorDict[p.target[1]]
-                    if (a) {
-                        debug.log("Received activity for actor '"+p.target[1]+"' in zone '"+p.target[0]+"', but actor was in zone '"+Map.zoneList[i].id+"'");
-                        return a;
-                    }
+        switch (p.type) {
+            case 'addactor':
+                var d = p.data;
+                var zone = Map.zoneDict[d.zone];
+                if (!zone) {
+                    debug.log("Recieved actor packet for unknown zone '"+d.zone+"'");
+                    return;
                 }
 
-                // Actor not found
-                return null;
-            }
-        };
+                Map.runAfterTick(function(args) {
+                    // First arg is the current tick time
+                    if (args[0] < d.time)
+                        return true;
 
-        if (p.target) {
-            var actor = getActor();
-            if (actor)
-                actor.addActivity(ActivityLoader.create(p.type, p.data, actor, p.id, p.time));
-            else
-                debug.error("Received activity for unknown actor '"+p.target[1]+"'");
+                    zone.loadActor(d.data);
+                });
+            break;
+            case 'removeactor':
+                var d = p.data;
+                var zone = Map.zoneDict[d.zone];
+                if (!zone) {
+                    debug.log("Recieved actor packet for unknown zone '"+d.zone+"'");
+                    return;
+                }
+
+                Map.runAfterTick(function(args) {
+                    // First arg is the current tick time
+                    if (args[0] < d.time)
+                        return true;
+
+                    zone.removeActor(d.id);
+                });
+            break;
+            case 'activity':
+                var d = p.data;
+                var getActor = function() {
+                    var actor = Map.zoneDict[d.zone].actorDict[d.actor];
+                    if (actor)
+                        return actor;
+
+                    // Search other zones
+                    for (var i = 0; i < Map.zoneList.length; i++) {
+                        var a = Map.zoneList[i].actorDict[d.actor]
+                        if (a) {
+                            debug.log("Received activity for actor '"+d.actor+"' in zone '"+d.zone+"', but actor was in zone '"+Map.zoneList[i].id+"'");
+                            return a;
+                        }
+                    }
+
+                    // Actor not found
+                    return null;
+                };
+
+                var actor = getActor();
+                if (actor)
+                    actor.addActivity(ActivityLoader.create(d.type, d.args, actor, d.id, d.time));
+                else
+                    debug.error("Received activity for unknown actor '"+d.actor+"'");
+            break;
         }
     },
 
-    sendActivity: function(activity, actor) {
-        this.dataQueue.push(activity.serialize(actor));
+    sendActivity: function(activity) {
+        this.dataQueue.push({
+            type: "activity",
+            data: activity.serialize()
+        });
     },
-    
-    injectTestData: function(startTime) {
+
+    injectTestData: function() {
+        /*
+         * Packet types
+         */
+        var startTime = new Date().getTime();
         this.dataQueue.push({
-            id:"foo1",
-            time:startTime,
-            target:["dungeon-top", "player"],
-            type:"move",
-            data:[{0:8, 1:10, 2:-1}, {0:7, 1:10, 2:0}, 600]
+            type:"addactor",
+            data: {
+                zone:"dungeon-top",
+                data:{"id": "e5", "type": "water_elemental", "pos":[3,8,0], "facing":1},
+                time: startTime + 1000
+            }
         });
-        this.dataQueue.push({
-            id:"foo2",
-            time:startTime+600,
-            target:["dungeon-top", "player"],
-            type:"move",
-            data:[{0:7, 1:10, 2:-1}, {0:6, 1:10, 2:0}, 600]
-        });
-        this.dataQueue.push({
-            id:"foo3",
-            time:startTime+1200,
-            target:["dungeon-top", "player"],
-            type:"move",
-            data:[{0:6, 1:10, 2:-1}, {0:5, 1:10, 2:0}, 600]
-        });
+
+        var next = function() {
+            this.dataQueue.push({
+                type:"activity",
+                data: {
+                    id:"test2",
+                    zone:"dungeon-top",
+                    actor: "e5",
+                    type:"move",
+                    args:[[3, 8, 0], [4, 8, 0], 600],
+                    time:startTime + 2000
+                }
+            });
+            this.dataQueue.push({
+                type:"activity",
+                data: {
+                    id:"test3",
+                    zone:"dungeon-top",
+                    actor: "e5",
+                    type:"move",
+                    args:[[4, 8, 0], [5, 8, 0], 600],
+                    time:startTime + 2600
+                }
+            });
+            this.dataQueue.push({
+                type:"removeactor",
+                data:{
+                    zone:"dungeon-top",
+                    id: "e5",
+                    time:startTime + 3500
+                }
+            });
+        }
+        next.bind(this).delay(1500);
     }
 });
