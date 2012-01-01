@@ -18,7 +18,7 @@ def = {
             [80,144]
         ],
     },
-    drawOffset: vec3.create([0, 0, 0]),
+    drawOffset: vec3.create([0, 1, 0.001]),
     hotspotOffset: vec3.create([0.5, 0.5, 0]),
 
     lastTime: 0,
@@ -61,8 +61,8 @@ def = {
         mat4.translate(mvMatrix, this.pos);
 
         // Lie flat on the ground
-        mat4.rotate(mvMatrix, degToRad(-90), [1, 0, 0]);
         mat4.translate(mvMatrix, this.drawOffset);
+        mat4.rotate(mvMatrix, degToRad(90), [1, 0, 0]);
         renderer.bindBuffer(this.vertexPosBuf, shaderProgram.vertexPositionAttribute);
         renderer.bindBuffer(this.vertexTexBuf, shaderProgram.textureCoordAttribute);
         renderer.bindTexture(this.texture);

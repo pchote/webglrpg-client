@@ -15,7 +15,7 @@
 
 	"actors": [
 	   { "id": "e1", "type": "elemental", "pos":[8,13,0], "facing":2 },
-	   { "id": "spurt7", "type": "lavaspurt", "pos":[7,10,-1.499], "facing":2 },
-	   { "id": "spurt9", "type": "lavaspurt", "pos":[10,10,-1.499], "facing":2 }
+	   { "id": "spurt7", "type": "lavaspurt", "pos":[7,10,-1.5], "facing":2 },
+	   { "id": "spurt9", "type": "lavaspurt", "pos":[10,10,-1.5], "facing":2 }
 	]
 }
