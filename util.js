@@ -134,6 +134,6 @@ var Debug = new Class({
     error: function() {
         if (!this.useConsole)
             return;
-        debug.error.apply(console, arguments);
+        console.error.apply(console, arguments);
     }
 });
